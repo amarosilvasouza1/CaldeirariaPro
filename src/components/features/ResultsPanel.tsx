@@ -1,0 +1,208 @@
+import React from 'react';
+import type { CalcResult, InputData } from '../../types';
+import { jsPDF } from 'jspdf';
+
+interface ResultsPanelProps {
+    results: CalcResult | null;
+    shape: string;
+    inputs: InputData | null;
+    canvasRef: React.RefObject<HTMLCanvasElement | null>;
+}
+
+const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, shape, inputs, canvasRef }) => {
+    if (!results) {
+        return (
+            <section className="glass-panel" style={{ minHeight: '500px', display: 'flex', flexDirection: 'column' }}>
+                <h2><span style={{ marginRight: '0.5rem' }}>📐</span> Visualização & Resultados</h2>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontStyle: 'italic' }}>
+                    <p>Selecione uma forma e insira as dimensões para visualizar o traçado.</p>
+                </div>
+            </section>
+        );
+    }
+
+    const handleDownloadPDF = () => {
+        if (!canvasRef.current || !inputs) return;
+
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        
+        // --- Header Background ---
+        doc.setFillColor(15, 23, 42); // Dark Blue
+        doc.rect(0, 0, pageWidth, 40, 'F');
+        
+        // --- Logo / Title ---
+        doc.setTextColor(245, 158, 11); // Accent Gold
+        doc.setFontSize(24);
+        doc.setFont('helvetica', 'bold');
+        doc.text('CaldeirariaPro', 20, 20);
+        
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Relatório Técnico de Fabricação', 20, 30);
+
+        // --- Date & Shape Info ---
+        doc.setTextColor(148, 163, 184); // Muted text
+        doc.text(`Data: ${new Date().toLocaleDateString()}`, pageWidth - 20, 20, { align: 'right' });
+        doc.text(`Peça: ${shape.toUpperCase()}`, pageWidth - 20, 30, { align: 'right' });
+
+        let y = 55;
+
+        // --- Section: Parâmetros ---
+        doc.setFillColor(240, 240, 240);
+        doc.rect(15, y - 5, pageWidth - 30, 8, 'F');
+        doc.setFontSize(12);
+        doc.setTextColor(15, 23, 42);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Parâmetros de Entrada', 20, y);
+        y += 10;
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(50, 50, 50);
+        
+        let xPos = 20;
+        Object.entries(inputs).forEach(([key, value]) => {
+            if (key === 'material') return; // Skip material if needed or format it
+            const text = `${key}: ${value}`;
+            doc.text(text, xPos, y);
+            xPos += 60;
+            if (xPos > pageWidth - 40) {
+                xPos = 20;
+                y += 6;
+            }
+        });
+        y += 15;
+
+        // --- Section: Resultados ---
+        doc.setFillColor(240, 240, 240);
+        doc.rect(15, y - 5, pageWidth - 30, 8, 'F');
+        doc.setFontSize(12);
+        doc.setTextColor(15, 23, 42);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Resultados Calculados', 20, y);
+        y += 10;
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(50, 50, 50);
+        
+        Object.entries(results.metrics).forEach(([key, value]) => {
+            doc.text(`${key}: ${value}`, 20, y);
+            y += 6;
+        });
+        y += 10;
+
+        // --- Diagram ---
+        // Center the image
+        const canvasImg = canvasRef.current.toDataURL('image/png');
+        const imgProps = doc.getImageProperties(canvasImg);
+        const pdfWidth = 120; // Max width for image
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        const xImg = (pageWidth - pdfWidth) / 2;
+
+        if (y + pdfHeight > pageHeight - 20) {
+            doc.addPage();
+            y = 20;
+        }
+
+        doc.addImage(canvasImg, 'PNG', xImg, y, pdfWidth, pdfHeight);
+        y += pdfHeight + 15;
+
+        // --- Section: Passo a Passo ---
+        if (y > pageHeight - 40) {
+            doc.addPage();
+            y = 20;
+        }
+
+        doc.setFillColor(240, 240, 240);
+        doc.rect(15, y - 5, pageWidth - 30, 8, 'F');
+        doc.setFontSize(12);
+        doc.setTextColor(15, 23, 42);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Passo a Passo de Fabricação', 20, y);
+        y += 12;
+
+        doc.setFontSize(10);
+        doc.setTextColor(50, 50, 50);
+        doc.setFont('helvetica', 'normal');
+
+        results.steps.forEach((step, index) => {
+            const stepTitle = `${index + 1}.`;
+            const stepContent = step;
+            
+            const splitContent = doc.splitTextToSize(stepContent, pageWidth - 45);
+            
+            if (y + (splitContent.length * 5) > pageHeight - 20) {
+                doc.addPage();
+                y = 20;
+            }
+
+            doc.setFont('helvetica', 'bold');
+            doc.text(stepTitle, 20, y);
+            
+            doc.setFont('helvetica', 'normal');
+            doc.text(splitContent, 30, y);
+            
+            y += (splitContent.length * 5) + 4;
+        });
+
+        // Footer
+        const pageCount = doc.getNumberOfPages();
+        for(let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor(150, 150, 150);
+            doc.text(`Página ${i} de ${pageCount} - Gerado por CaldeirariaPro`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+        }
+
+        doc.save(`caldeiraria-pro-${shape}.pdf`);
+    };
+
+    return (
+        <section className="glass-panel">
+            <h2><span style={{ marginRight: '0.5rem' }}>📐</span> Visualização & Resultados</h2>
+            
+            <div style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '8px', padding: '1rem', marginBottom: '2rem', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px', border: '1px dashed rgba(148, 163, 184, 0.2)' }}>
+                {/* Canvas is rendered by parent but we can wrap it here if passed as children, but for now we assume it's controlled elsewhere or passed as prop. 
+                    Actually, it's better to render the DiagramCanvas component here or in the parent. 
+                    Let's assume the parent renders DiagramCanvas and passes the ref here for PDF generation, 
+                    BUT visually the canvas should be inside this panel. 
+                    So let's accept a component or children. 
+                    Wait, the design had the canvas inside the results panel.
+                    I'll render the canvas element here and pass the ref to it.
+                */}
+                <canvas ref={canvasRef} style={{ maxWidth: '100%', maxHeight: '400px' }} />
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+                {Object.entries(results.metrics).map(([key, value]) => (
+                    <div key={key} style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '1rem', borderRadius: '8px', borderLeft: '3px solid #f59e0b' }}>
+                        <span style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'block', marginBottom: '0.3rem' }}>{key}</span>
+                        <span style={{ fontSize: '1.2rem', fontWeight: 700, fontFamily: "'Orbitron', sans-serif", color: '#f8fafc' }}>{value}</span>
+                    </div>
+                ))}
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+                <h3 style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '1rem', marginBottom: '1rem', color: '#f59e0b' }}>Passo a Passo de Fabricação</h3>
+                <ul style={{ listStyle: 'none', counterReset: 'step-counter' }}>
+                    {results.steps.map((step, index) => (
+                        <li key={index} style={{ position: 'relative', paddingLeft: '2.5rem', marginBottom: '1rem', lineHeight: '1.6' }}>
+                            <span style={{ position: 'absolute', left: 0, top: 0, width: '1.8rem', height: '1.8rem', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 'bold', color: '#f59e0b' }}>
+                                {index + 1}
+                            </span>
+                            {step}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            
+            <button onClick={handleDownloadPDF} className="secondary-button">Baixar Relatório PDF</button>
+        </section>
+    );
+};
+
+export default ResultsPanel;
