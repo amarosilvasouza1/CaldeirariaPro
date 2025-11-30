@@ -5,9 +5,10 @@ interface DiagramCanvasProps {
     canvasRef: React.RefObject<HTMLCanvasElement | null>;
     shape: string;
     data: ShapeData | undefined;
+    inputs?: ShapeData | null;
 }
 
-const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data }) => {
+const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, inputs }) => {
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas || !data) return;
@@ -46,6 +47,8 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data })
         if (shape === 'cylinder') {
             const width = Number(data.width) || 0;
             const height = Number(data.height) || 0;
+            const diameter = inputs ? Number(inputs.diameter) : 0;
+            const thickness = inputs ? Number(inputs.thickness) : 0;
             
             // Calculate scale to fit
             const scaleX = (canvas.width - padding * 2) / width;
@@ -57,6 +60,7 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data })
             
             ctx.beginPath();
             ctx.rect(cx - w/2, cy - h/2, w, h);
+            ctx.fillStyle = fillColor;
             ctx.fill();
             ctx.stroke();
 
@@ -97,12 +101,23 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data })
             ctx.rotate(Math.PI / 2);
             ctx.fillText(`H = ${height} mm`, 0, 0);
             ctx.restore();
-            
+
+            // Extra Info
+            ctx.font = '11px Inter';
+            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+            const circ = (Math.PI * (diameter + thickness)).toFixed(1);
+            ctx.fillText(`Ø Int: ${diameter}mm | Esp: ${thickness}mm | Circ: ${circ}mm`, cx, cy + h/2 + 20);
         } else if (shape === 'cone') {
             const R_dev = Number(data.R_dev) || 0;
             const r_dev = Number(data.r_dev) || 0;
             const theta = Number(data.theta) || 0;
+            const d1 = inputs ? Number(inputs.d1) : 0;
+            const d2 = inputs ? Number(inputs.d2) : 0;
+            const h_input = inputs ? Number(inputs.height) : 0;
             
+            // Calculate Chord (Corda)
+            const corda = 2 * R_dev * Math.sin((theta * Math.PI / 180) / 2);
+
             // Calculate Bounding Box for the Sector
             const startAngle = (Math.PI * 1.5) - (theta * Math.PI / 180) / 2;
             const endAngle = startAngle + (theta * Math.PI / 180);
@@ -186,11 +201,65 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data })
             ctx.lineTo(x2_out, y2_out);
             ctx.stroke();
 
+            // Chord Line (Dashed)
+            ctx.setLineDash([5, 5]);
+            ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim() + '60';
+            ctx.beginPath();
+            ctx.moveTo(x1_out, y1_out);
+            ctx.lineTo(x2_out, y2_out);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.strokeStyle = strokeColor;
+
             // Dimensions
             ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-main').trim();
             ctx.font = '12px Inter';
-            ctx.fillText(`R = ${R_dev.toFixed(1)}`, x2_out + 10, y2_out);
+            ctx.textAlign = 'left';
+            ctx.fillText(`R Maior = ${R_dev.toFixed(1)}`, x2_out + 10, y2_out);
+            
+            if (r_dev > 0) {
+                ctx.fillText(`r Menor = ${r_dev.toFixed(1)}`, x2_in + 10, y2_in);
+            }
+
+            // Geratriz (g) Dimension
+            const midAngle = (startAngle + endAngle) / 2;
+            const g_val = R_dev - r_dev;
+            const g_x1 = apexX + Math.cos(midAngle) * r_dev * scale;
+            const g_y1 = apexY + Math.sin(midAngle) * r_dev * scale;
+            const g_x2 = apexX + Math.cos(midAngle) * R_dev * scale;
+            const g_y2 = apexY + Math.sin(midAngle) * R_dev * scale;
+
+            // Draw arrow/line for g
+            ctx.beginPath();
+            ctx.moveTo(g_x1, g_y1);
+            ctx.lineTo(g_x2, g_y2);
+            ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--accent').trim();
+            ctx.stroke();
+
+            // Label g
+            ctx.save();
+            ctx.translate((g_x1 + g_x2) / 2, (g_y1 + g_y2) / 2);
+            ctx.rotate(midAngle + Math.PI / 2); // Rotate to align with radius (perpendicular)
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(`g = ${g_val.toFixed(1)}`, 0, -5);
+            ctx.restore();
+
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'alphabetic'; // Reset baseline
             ctx.fillText(`${theta.toFixed(1)}°`, apexX, apexY + (R_dev * scale + 20));
+
+            // Chord Text
+            const chordMidX = (x1_out + x2_out) / 2;
+            const chordMidY = (y1_out + y2_out) / 2;
+            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--accent').trim();
+            ctx.fillText(`Corda: ${corda.toFixed(1)}`, chordMidX, chordMidY + 15);
+
+            // Extra Info
+            ctx.font = '11px Inter';
+            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+            ctx.fillText(`Base: Ø${d1} | Topo: Ø${d2} | H: ${h_input} | g: ${g_val.toFixed(1)}`, cx, canvas.height - 10);
 
         } else if (shape === 'square-to-round') {
             const width = Number(data.width) || 0;
@@ -256,6 +325,12 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data })
             ctx.fillText(`Base: ${width}x${width}`, cx, cy + w/2 + 20);
             ctx.fillText(`Topo: Ø${diameter}`, cx, cy - w/2 - 10);
             ctx.fillText(`H: ${height}`, cx + w/2 + 20, cy);
+            
+            // Extra Info
+            ctx.font = '11px Inter';
+            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+            const thickness = inputs ? Number(inputs.thickness) : 0;
+            ctx.fillText(`Base: ${width}x${width} | Topo: Ø${diameter} | H: ${height} | Esp: ${thickness}mm`, cx, canvas.height - 10);
 
         } else if (shape === 'elbow') {
             const radius = Number(data.radius) || 0;
@@ -331,6 +406,11 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data })
             ctx.fillText(`R = ${radius}`, curvatureCx + 10, curvatureCy - 10);
             ctx.fillText(`${angle}°`, curvatureCx + r_outer + 10, curvatureCy - r_outer/2);
             ctx.fillText(`Ø ${diameter}`, curvatureCx + r_outer + 10, curvatureCy);
+            
+            ctx.font = '11px Inter';
+            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+            const thickness = inputs ? Number(inputs.thickness) : 0;
+            ctx.fillText(`Gomos: ${segments} | Raio: ${radius}mm | Ø: ${diameter}mm | Esp: ${thickness}mm`, cx, canvas.height - 10);
 
         } else if (shape === 'offset') {
             const diameter = Number(data.diameter) || 0;
@@ -406,6 +486,12 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data })
             ctx.fillText(`Travel: ${travel.toFixed(1)}`, cx - 20, cy - 20);
             ctx.fillText(`${angleDeg.toFixed(1)}°`, startX + 30, startY - 10);
 
+            // Extra Info
+            ctx.font = '11px Inter';
+            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+            const thickness = inputs ? Number(inputs.thickness) : 0;
+            ctx.fillText(`Ø: ${diameter}mm | Esp: ${thickness}mm`, cx, canvas.height - 10);
+
         } else if (shape === 'stairs') {
             const height = Number(data.height) || 0;
             const base = Number(data.base) || 0;
@@ -448,6 +534,49 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data })
             ctx.fillText(`H: ${height}`, cx - (base * scale)/2 - 30, cy);
             ctx.fillText(`Base: ${base}`, cx, startY + 20);
             ctx.fillText(`${numSteps} Degraus`, cx, cy - 20);
+
+            // Visual Dimensions for First Step
+            if (numSteps > 0) {
+                const firstStepX = startX;
+                const firstStepY = startY;
+                const nextStepX = startX + run * scale;
+                const nextStepY = startY - rise * scale;
+
+                // Rise Label
+                ctx.beginPath();
+                ctx.moveTo(firstStepX - 10, firstStepY);
+                ctx.lineTo(firstStepX - 10, nextStepY);
+                ctx.stroke();
+                // Ticks
+                ctx.moveTo(firstStepX - 5, firstStepY);
+                ctx.lineTo(firstStepX - 15, firstStepY);
+                ctx.moveTo(firstStepX - 5, nextStepY);
+                ctx.lineTo(firstStepX - 15, nextStepY);
+                ctx.stroke();
+                
+                ctx.textAlign = 'right';
+                ctx.fillText(`E: ${rise.toFixed(1)}`, firstStepX - 20, (firstStepY + nextStepY) / 2);
+
+                // Run Label
+                ctx.beginPath();
+                ctx.moveTo(firstStepX, nextStepY - 10);
+                ctx.lineTo(nextStepX, nextStepY - 10);
+                ctx.stroke();
+                // Ticks
+                ctx.moveTo(firstStepX, nextStepY - 5);
+                ctx.lineTo(firstStepX, nextStepY - 15);
+                ctx.moveTo(nextStepX, nextStepY - 5);
+                ctx.lineTo(nextStepX, nextStepY - 15);
+                ctx.stroke();
+
+                ctx.textAlign = 'center';
+                ctx.fillText(`P: ${run.toFixed(1)}`, (firstStepX + nextStepX) / 2, nextStepY - 20);
+            }
+            
+            ctx.textAlign = 'center';
+            ctx.font = '11px Inter';
+            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+            ctx.fillText(`Espelho (E): ${rise.toFixed(1)}mm | Piso (P): ${run.toFixed(1)}mm`, cx, canvas.height - 10);
 
         } else if (shape === 'bracket') {
             const height = Number(data.height) || 0;
@@ -556,6 +685,11 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data })
             
             ctx.fillText(`Ø${diameterMm}`, cx + hh/2, cy - d/2 - 10);
             ctx.fillText(`Passo: ${pitch}mm`, cx + hh/2, cy + d/2 + 20);
+            
+            ctx.font = '11px Inter';
+            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+            const boltClass = inputs ? inputs.boltClass : '';
+            ctx.fillText(`Classe: ${boltClass} | Comp: ${length}mm (aprox)`, cx, canvas.height - 10);
         } else if (shape === 'plate-weight') {
             const width = Number(data.width) || 0;
             const length = Number(data.length) || 0;
@@ -591,6 +725,11 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data })
             ctx.restore();
             
             ctx.fillText(`E: ${thickness}mm`, cx, cy);
+            
+            ctx.font = '11px Inter';
+            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+            const qty = inputs ? inputs.quantity : 1;
+            ctx.fillText(`Qtd: ${qty} | Peso Total: ${(Number(data.totalWeight) || 0).toFixed(2)} kg`, cx, canvas.height - 10);
         } else if (shape === 'volumes') {
             const subShape = String(data.subShape || 'cylinder');
             
@@ -869,7 +1008,7 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data })
                 }
             }
         }
-    }, [shape, data, canvasRef]);
+    }, [canvasRef, shape, data, inputs]);
 
     return null; 
 };

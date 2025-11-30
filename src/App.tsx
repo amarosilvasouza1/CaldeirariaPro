@@ -121,7 +121,7 @@ const App: React.FC = () => {
                                     <InputPanel key={currentShape} shape={currentShape} onCalculate={handleCalculate} />
                                 </div>
                                 <div className="results-area">
-                                    <DiagramCanvas canvasRef={canvasRef} shape={currentShape} data={results?.calculated} />
+                                    <DiagramCanvas canvasRef={canvasRef} shape={currentShape} data={results?.calculated} inputs={inputs} />
                                     <ResultsPanel 
                                         results={results} 
                                         shape={currentShape} 
