@@ -91,6 +91,13 @@ export const calculateBracket = (data: ShapeData, material: string = 'steel'): C
             
             `5. SOLDAGEM E ACABAMENTO:\n   - Realize a soldagem completa das juntas. Para cargas altas, use eletrodo 7018 ou MIG/MAG com boa penetração.\n   - Se necessário, adicione uma chapa de reforço (gusset) nos cantos internos para aumentar a rigidez.\n   - Limpe a solda e aplique proteção anticorrosiva.`
         ],
-        calculated: { height, base, width, diagonal, angleDeg, topAngleDeg }
+        calculated: { 
+            height, base, width, diagonal, angleDeg, topAngleDeg,
+            weight,
+            forceKg,
+            stressMPa,
+            status,
+            maxLoadKg
+        }
     };
 };

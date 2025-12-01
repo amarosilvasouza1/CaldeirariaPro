@@ -12,7 +12,14 @@ export const calculateStairs = (data: ShapeData, material: string = 'steel'): Ca
          return {
             metrics: { 'Aviso': 'Insira a altura.' },
             steps: ['Aguardando dados...'],
-            calculated: { height, base }
+            calculated: { 
+                height, base, width: 0, diagonal: 0, angleDeg: 0, topAngleDeg: 0,
+                weight: 0,
+                forceKg: 0,
+                stressMPa: 0,
+                status: 'Aguardando dados',
+                maxLoadKg: 0
+            }
         };
     }
 
@@ -62,6 +69,21 @@ export const calculateStairs = (data: ShapeData, material: string = 'steel'): Ca
         weight = (totalStringerLength / 1000 * 15) + (totalStepLength / 1000 * run / 1000 * 40); // Very rough
     }
 
+    // Placeholder for new derived metrics (assuming they would be calculated here)
+    const weightKg = weight; // Renaming for clarity as per instruction
+    const totalWeightKg = weightKg; // Assuming total weight is the same as estimated weight for now
+    const totalAreaM2 = totalAreaMm2 / 1_000_000; // Convert mm2 to m2
+    const volumeDm3 = (totalAreaMm2 * thickness) / 1_000_000; // Assuming thickness is in mm, volume in dm3 (liters)
+
+    // Placeholder for other new metrics
+    const diagonal = stringerLength; // Assuming diagonal refers to stringer length
+    const topAngleDeg = 90 - angleDeg; // Angle at the top
+    const forceKg = 0; // Not calculated in this snippet
+    const stressMPa = 0; // Not calculated in this snippet
+    const status = 'Calculado'; // Default status
+    const maxLoadKg = 0; // Not calculated in this snippet
+
+
     return {
         metrics: {
             'Altura Total': `${height} mm`,
@@ -86,6 +108,15 @@ export const calculateStairs = (data: ShapeData, material: string = 'steel'): Ca
             
             `5. MONTAGEM E INSTALAÇÃO:\n   - Fixe os suportes de degrau ou solde os degraus diretamente nos banzos.\n   - Posicione a escada no local. Fixe primeiro a parte superior (laje) e confira o nível antes de fixar a base.\n   - Instale o corrimão (obrigatório para segurança) a 900mm de altura.`
         ],
-        calculated: { height, base, numSteps, rise, run, stringerLength }
+        calculated: { 
+            height, base, numSteps, rise, run, stringerLength,
+            weightKg,
+            totalWeightKg,
+            totalAreaM2,
+            volumeDm3,
+            angleDeg,
+            totalStringerLength,
+            totalStepLength
+        }
     };
 };

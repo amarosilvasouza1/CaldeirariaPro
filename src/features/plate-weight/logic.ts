@@ -52,7 +52,10 @@ export const calculatePlateWeight = (data: ShapeData, material: string = 'steel'
             width,
             length,
             thickness,
-            weightKg
+            weightKg,
+            totalWeightKg,
+            totalAreaM2,
+            volumeDm3
         }
     };
 };

@@ -75,6 +75,12 @@ export const calculateBolts = (data: ShapeData, _material: string = 'steel'): Ca
             
             `5. APERTO (TORQUE):\n   - O aperto correto é fundamental para a resistência à fadiga.\n   - Torque Recomendado (Seco, K=0.2): ${torque.toFixed(1)} N.m.\n   - Use um torquímetro para garantir a pré-carga correta de ${(preload).toFixed(1)} kN por parafuso.`
         ],
-        calculated: { diameterStr, boltClassStr, pitch: boltInfo.pitch, diameterMm }
+        calculated: { 
+            diameterStr, boltClassStr, pitch: boltInfo.pitch, diameterMm,
+            totalYieldLoad,
+            utilization,
+            status,
+            torque
+        }
     };
 };

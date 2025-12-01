@@ -130,7 +130,9 @@ export const calculateVolumes = (data: ShapeData): CalcResult | null => {
         calculated: {
             ...data,
             volume,
-            area
+            area,
+            volumeLiters,
+            areaM2
         }
     };
 };

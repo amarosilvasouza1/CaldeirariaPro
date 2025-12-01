@@ -49,6 +49,13 @@ export const calculateCylinder = (data: ShapeData, material: string = 'steel'): 
             
             `5. FECHAMENTO E SOLDA:\n   - Ajuste as pontas para o fechamento. Se a espessura for maior que 3mm, faça um chanfro (bisel) para garantir penetração da solda.\n   - Ponteie a união em 3 ou 4 pontos e confira o alinhamento e o diâmetro antes de realizar o cordão de solda final.`
         ],
-        calculated: { width: circumference, height }
+        calculated: { 
+            width: circumference, 
+            height,
+            weight,
+            internalVolumeLiters,
+            totalAreaM2,
+            circumference
+        }
     };
 };
