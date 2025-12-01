@@ -50,12 +50,15 @@ export const calculateCone = (data: ShapeData, material: string = 'steel'): Calc
             'Peso Estimado': `${weight.toFixed(2)} kg`
         },
         steps: [
-            `PREPARAÇÃO: Selecione uma chapa de ${material === 'steel' ? 'Aço' : material} com espessura de ${thickness} mm.`,
-            `TRAÇAGEM: Marque um ponto central na chapa. Trace o arco maior com raio ${R_dev.toFixed(1)} mm e o arco menor com raio ${r_dev.toFixed(1)} mm.`,
-            `ANGULAÇÃO: A partir do centro, marque o ângulo de abertura de ${theta.toFixed(1)}°. Use um transferidor ou calcule a corda.`,
-            `CORTE: Corte o setor circular definido pelos dois arcos e pelas linhas radiais do ângulo.`,
-            `CALANDRAGEM: Inicie a conformação pelas extremidades, forçando o raio menor para formar o cone. Ajuste a pressão dos rolos conforme a conicidade.`,
-            `FECHAMENTO: Verifique o alinhamento das bordas (geratriz) e solde.`
+            `1. PREPARAÇÃO E TRAÇAGEM:\n   - Material: Chapa de ${material === 'steel' ? 'Aço' : material}, espessura ${thickness} mm.\n   - Marque um ponto "O" (Centro) próximo à borda da chapa para aproveitar o material.\n   - Com um compasso ou trena fixada no ponto "O", trace dois arcos:\n     • Arco Maior (Externo) com raio = ${R_dev.toFixed(1)} mm\n     • Arco Menor (Interno) com raio = ${r_dev.toFixed(1)} mm`,
+            
+            `2. DEFINIÇÃO DO ÂNGULO (CORDA):\n   - O ângulo de abertura é de ${theta.toFixed(1)}°.\n   - Para marcar sem transferidor, calcule a Corda do arco maior: C = 2 * ${R_dev.toFixed(1)} * sen(${theta.toFixed(1)}° / 2).\n   - Marque essa medida "C" em linha reta sobre o arco maior a partir do ponto inicial.`,
+            
+            `3. CORTE:\n   - Corte o perímetro definido pelos dois arcos e pelas linhas laterais que convergem para o centro.\n   - DICA: Deixe uma pequena sobra (10-20mm) em uma das extremidades retas se precisar de área para transpasse ou ajuste na solda.`,
+            
+            `4. CALANDRAGEM (CONICIDADE):\n   - A calandragem de cones exige técnica: o lado do raio menor deve girar mais devagar que o lado maior.\n   - Se usar calandra de rolos paralelos, freie levemente o lado menor ou use um dispositivo de encosto (batedor) inclinado.\n   - Verifique a curvatura constantemente com gabaritos dos raios maior e menor.`,
+            
+            `5. FECHAMENTO:\n   - Junte as arestas laterais. Verifique se a altura vertical do cone bate com ${height} mm.\n   - Ponteie, confira o esquadro da base em uma superfície plana e proceda com a soldagem definitiva.`
         ],
         calculated: { R_dev, r_dev, theta }
     };

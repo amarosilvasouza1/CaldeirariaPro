@@ -39,11 +39,15 @@ export const calculateCylinder = (data: ShapeData, material: string = 'steel'): 
             'Área Superficial': `${totalAreaM2.toFixed(2)} m²`
         },
         steps: [
-            `PREPARAÇÃO: Selecione uma chapa de ${material === 'steel' ? 'Aço' : material} com espessura de ${thickness} mm. Verifique se a chapa está plana e livre de defeitos.`,
-            `TRAÇAGEM: Trace um retângulo com Largura = ${circumference.toFixed(1)} mm e Altura = ${height} mm. IMPORTANTE: Verifique o esquadro medindo as diagonais (devem ser iguais).`,
-            `CORTE: Realize o corte da chapa nas linhas traçadas (Guilhotina, Plasma ou Oxicorte). Remova as rebarbas das arestas.`,
-            `CALANDRAGEM: Insira a chapa na calandra alinhada com os rolos. Faça passes progressivos até atingir o Diâmetro Interno de ${diameter} mm. Verifique a circularidade com um gabarito.`,
-            `FECHAMENTO: Ajuste as pontas para o soldagem (chanfro se necessário). Ponteie a união e confira o alinhamento antes da solda final.`
+            `1. PREPARAÇÃO DO MATERIAL:\n   - Selecione uma chapa de ${material === 'steel' ? 'Aço' : material} com espessura de ${thickness} mm.\n   - Verifique se a chapa está plana, limpa e livre de oxidação excessiva.\n   - DICA: Para calandragem, prefira que o sentido de laminação da chapa (grão) esteja perpendicular à linha de dobra para evitar trincas.`,
+            
+            `2. TRAÇAGEM E DIMENSIONAMENTO:\n   - Trace um retângulo com:\n     • Largura (Perímetro) = ${circumference.toFixed(1)} mm\n     • Altura = ${height} mm\n   - CONFERÊNCIA DE ESQUADRO: A diagonal do retângulo deve medir exatos ${Math.sqrt(Math.pow(circumference, 2) + Math.pow(height, 2)).toFixed(1)} mm. Se a medida for diferente, o retângulo não está no esquadro.`,
+            
+            `3. CORTE E ACABAMENTO:\n   - Realize o corte nas linhas traçadas utilizando Guilhotina, Plasma ou Oxicorte.\n   - IMPORTANTE: Remova todas as rebarbas das arestas com uma lixadeira para garantir um fechamento perfeito e evitar acidentes durante o manuseio.`,
+            
+            `4. CALANDRAGEM (CONFORMAÇÃO):\n   - Insira a chapa na calandra bem alinhada com os rolos.\n   - Faça passes progressivos, apertando os rolos aos poucos.\n   - Verifique o raio constantemente com um gabarito (molde) do Diâmetro Interno (${diameter} mm) para garantir a circularidade uniforme.`,
+            
+            `5. FECHAMENTO E SOLDA:\n   - Ajuste as pontas para o fechamento. Se a espessura for maior que 3mm, faça um chanfro (bisel) para garantir penetração da solda.\n   - Ponteie a união em 3 ou 4 pontos e confira o alinhamento e o diâmetro antes de realizar o cordão de solda final.`
         ],
         calculated: { width: circumference, height }
     };

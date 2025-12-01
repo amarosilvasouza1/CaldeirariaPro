@@ -65,11 +65,15 @@ export const calculateBolts = (data: ShapeData, _material: string = 'steel'): Ca
             'Torque Rec. (Seco)': `${torque.toFixed(1)} N.m`
         },
         steps: [
-            `IDENTIFICAÇÃO: Parafuso ${diameterStr} Classe ${boltClassStr} (${count} unidades).`,
-            `RESISTÊNCIA: Cada parafuso suporta ${yieldLoad.toFixed(1)} kN no escoamento e ${tensileLoad.toFixed(1)} kN na ruptura.`,
-            `CAPACIDADE: O conjunto suporta até ${totalYieldLoad.toFixed(1)} kN (Escoamento).`,
-            `ANÁLISE: Carga aplicada de ${loadkN.toFixed(2)} kN. Utilização de ${utilization.toFixed(1)}%. Status: ${status}.`,
-            `MONTAGEM: Aplique torque de ${torque.toFixed(1)} N.m (seco) para garantir pré-carga correta.`
+            `1. IDENTIFICAÇÃO E SELEÇÃO:\n   - Parafuso: ${diameterStr} (Passo ${boltInfo.pitch}mm).\n   - Classe de Resistência: ${boltClassStr} (Primeiro número x 100 = Tensão Ruptura MPa; Segundo número / 10 = Razão Escoamento).\n   - Quantidade: ${count} parafusos.`,
+            
+            `2. CAPACIDADE INDIVIDUAL:\n   - Área Resistente (Stress Area): ${boltInfo.area} mm².\n   - Carga de Escoamento (Yield): ${yieldLoad.toFixed(1)} kN (ponto onde o parafuso deforma permanentemente).\n   - Carga de Ruptura (Tensile): ${tensileLoad.toFixed(1)} kN.`,
+            
+            `3. ANÁLISE DO CONJUNTO:\n   - Capacidade Total do Grupo: ${totalYieldLoad.toFixed(1)} kN.\n   - Carga Aplicada: ${loadkN.toFixed(2)} kN.\n   - Taxa de Utilização: ${utilization.toFixed(1)}%. Status: ${status}.`,
+            
+            `4. MONTAGEM:\n   - Use arruelas planas para distribuir a carga e arruelas de pressão se houver vibração.\n   - Certifique-se de que a rosca esteja limpa e lubrificada (se o torque for calculado para lubrificado) ou seca (se calculado para seco).`,
+            
+            `5. APERTO (TORQUE):\n   - O aperto correto é fundamental para a resistência à fadiga.\n   - Torque Recomendado (Seco, K=0.2): ${torque.toFixed(1)} N.m.\n   - Use um torquímetro para garantir a pré-carga correta de ${(preload).toFixed(1)} kN por parafuso.`
         ],
         calculated: { diameterStr, boltClassStr, pitch: boltInfo.pitch, diameterMm }
     };

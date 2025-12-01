@@ -52,12 +52,15 @@ export const calculateOffset = (data: ShapeData, material: string = 'steel'): Ca
             'Peso Estimado': `${weight.toFixed(2)} kg`
         },
         steps: [
-            `PREPARAÇÃO: Selecione um tubo de ${material === 'steel' ? 'Aço' : material} com diâmetro de ${diameter} mm e espessura de ${thickness} mm.`,
-            `CÁLCULO: A peça diagonal (Travel) deve ter comprimento total de ${travel.toFixed(1)} mm (ponta a ponta).`,
-            `TRAÇAGEM: Marque o comprimento de ${travel.toFixed(1)} mm. Nas extremidades, marque o Recuo de Corte de ${fullCutBack.toFixed(1)} mm em lados opostos (180°).`,
-            `CORTE: Realize o corte em ângulo de ${cutAngle.toFixed(2)}° nas duas pontas. Os cortes devem ser paralelos entre si.`,
-            `MONTAGEM: Posicione a peça diagonal entre os tubos a serem conectados. O deslocamento deve casar perfeitamente com ${offset} mm de altura e ${run} mm de avanço.`,
-            `SOLDAGEM: Ponteie e solde as juntas.`
+            `1. PREPARAÇÃO:\n   - Material: Tubo de ${material === 'steel' ? 'Aço' : material}, Ø${diameter} mm, espessura ${thickness} mm.\n   - O objetivo é conectar dois tubos paralelos com um Deslocamento (Set) de ${offset} mm e um Avanço (Run) de ${run} mm.`,
+            
+            `2. CÁLCULO DA DIAGONAL (TRAVEL):\n   - A peça de conexão terá um comprimento total (ponta a ponta) de ${travel.toFixed(1)} mm.\n   - O ângulo de inclinação será de ${angleDeg.toFixed(2)}°.\n   - O ângulo de corte em cada ponta será de ${((angleDeg)/2).toFixed(2)}° (metade do ângulo de desvio).`,
+            
+            `3. TRAÇAGEM DO CORTE (CUT BACK):\n   - Marque o comprimento total (${travel.toFixed(1)} mm) no tubo.\n   - Em cada extremidade, você deve marcar o "Recuo de Corte" (Cut Back) de ${fullCutBack.toFixed(1)} mm.\n   - IMPORTANTE: Os cortes devem ser PARALELOS. Marque o recuo em lados opostos do tubo (defasados 180°).`,
+            
+            `4. CORTE:\n   - Realize o corte seguindo as marcações. Use uma cinta de traçagem (wrap-around) para ligar os pontos do recuo de forma suave.\n   - Remova as rebarbas e faça o chanfro se necessário.`,
+            
+            `5. MONTAGEM:\n   - Posicione a peça diagonal. Verifique se a altura vertical entre os centros dos tubos é exatamente ${offset} mm.\n   - Verifique se o avanço horizontal é de ${run} mm.\n   - Ponteie, confira o alinhamento e solde.`
         ],
         calculated: { diameter, offset, run, travel, angleDeg }
     };

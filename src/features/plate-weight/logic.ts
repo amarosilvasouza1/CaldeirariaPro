@@ -38,11 +38,15 @@ export const calculatePlateWeight = (data: ShapeData, material: string = 'steel'
             'Volume Unitário': `${volumeDm3.toFixed(4)} dm³`
         },
         steps: [
-            `IDENTIFICAÇÃO: Chapa de ${width}x${length}x${thickness} mm (${quantity} unidades).`,
-            `VOLUME: Cada peça tem ${volumeDm3.toFixed(4)} dm³ de volume.`,
-            `DENSIDADE: Material (${material}) com densidade de ${density} kg/dm³.`,
-            `PESO UNITÁRIO: ${volumeDm3.toFixed(4)} x ${density} = ${weightKg.toFixed(2)} kg.`,
-            `PESO TOTAL: ${quantity} x ${weightKg.toFixed(2)} = ${totalWeightKg.toFixed(2)} kg.`
+            `1. IDENTIFICAÇÃO DO MATERIAL:\n   - Dimensões: ${width} mm (Largura) x ${length} mm (Comprimento) x ${thickness} mm (Espessura).\n   - Quantidade: ${quantity} peças.\n   - Material: ${material === 'steel' ? 'Aço Carbono' : material === 'stainless' ? 'Aço Inox' : material === 'aluminum' ? 'Alumínio' : material}.`,
+            
+            `2. CÁLCULO DO VOLUME:\n   - Volume Unitário = Largura x Comprimento x Espessura.\n   - V = ${width} x ${length} x ${thickness} = ${volumeMm3.toFixed(0)} mm³ (${volumeDm3.toFixed(4)} dm³).`,
+            
+            `3. CÁLCULO DO PESO:\n   - Densidade considerada: ${density} kg/dm³.\n   - Peso Unitário = Volume (dm³) x Densidade.\n   - P = ${volumeDm3.toFixed(4)} x ${density} = ${weightKg.toFixed(2)} kg.`,
+            
+            `4. TOTAIS:\n   - Peso Total do Lote: ${quantity} x ${weightKg.toFixed(2)} = ${totalWeightKg.toFixed(2)} kg.\n   - Área Total de Pintura/Superfície: ${totalAreaM2.toFixed(2)} m².`,
+            
+            `5. DICA DE COMPRA:\n   - Ao comprar, considere sempre uma margem de erro ou perda de corte (retalhos) se for cortar de uma chapa maior.`
         ],
         calculated: {
             width,

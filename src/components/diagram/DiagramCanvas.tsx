@@ -16,6 +16,8 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
+        try {
+
         // Resize canvas to parent
         const wrapper = canvas.parentElement;
         if (wrapper) {
@@ -57,6 +59,14 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
 
             const w = width * scale;
             const h = height * scale;
+
+            if (width <= 0 || height <= 0 || !Number.isFinite(scale)) {
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+                ctx.font = '14px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Dimensões Inválidas', cx, cy);
+                return;
+            }
             
             ctx.beginPath();
             ctx.rect(cx - w/2, cy - h/2, w, h);
@@ -169,6 +179,14 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
             const scaleY = (canvas.height - padding * 2) / bboxH;
             const scale = Math.min(scaleX, scaleY);
 
+            if (bboxW <= 0 || bboxH <= 0 || !Number.isFinite(scale) || R_dev <= 0 || r_dev < 0) {
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+                ctx.font = '14px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Dimensões Inválidas', cx, cy);
+                return;
+            }
+
             const bboxCenterX = (minX + maxX) / 2;
             const bboxCenterY = (minY + maxY) / 2;
             
@@ -273,6 +291,14 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
                 (canvas.height - padding * 2) / size
             );
 
+            if (size <= 0 || !Number.isFinite(scale)) {
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+                ctx.font = '14px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Dimensões Inválidas', cx, cy);
+                return;
+            }
+
             const w = width * scale;
             const d = diameter * scale;
 
@@ -343,6 +369,14 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
                 (canvas.width - padding * 2) / maxExtent,
                 (canvas.height - padding * 2) / maxExtent
             );
+
+            if (maxExtent <= 0 || !Number.isFinite(scale)) {
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+                ctx.font = '14px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Dimensões Inválidas', cx, cy);
+                return;
+            }
 
             const curvatureCx = cx - (radius * scale) / 2;
             const curvatureCy = cy + (radius * scale) / 2;
@@ -427,6 +461,14 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
                 (canvas.height - padding * 2) / h_total
             );
 
+            if (w_total <= 0 || h_total <= 0 || !Number.isFinite(scale)) {
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+                ctx.font = '14px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Dimensões Inválidas', cx, cy);
+                return;
+            }
+
             const startX = cx - (run * scale) / 2;
             const startY = cy + (offset * scale) / 2; 
             
@@ -503,6 +545,14 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
             const scaleY = (canvas.height - padding * 2) / height;
             const scale = Math.min(scaleX, scaleY);
             
+            if (base <= 0 || height <= 0 || !Number.isFinite(scale)) {
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+                ctx.font = '14px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Dimensões Inválidas', cx, cy);
+                return;
+            }
+
             const startX = cx - (base * scale) / 2;
             const startY = cy + (height * scale) / 2;
             
@@ -590,6 +640,14 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
             const scaleY = (canvas.height - padding * 2) / height;
             const scale = Math.min(scaleX, scaleY);
             
+            if (base <= 0 || height <= 0 || !Number.isFinite(scale)) {
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+                ctx.font = '14px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Dimensões Inválidas', cx, cy);
+                return;
+            }
+
             const w = base * scale;
             const h = height * scale;
             
@@ -650,6 +708,14 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
                 (canvas.width - padding * 2) / totalWidth,
                 (canvas.height - padding * 2) / totalHeight
             );
+
+            if (totalWidth <= 0 || totalHeight <= 0 || !Number.isFinite(scale)) {
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+                ctx.font = '14px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Dimensões Inválidas', cx, cy);
+                return;
+            }
             
             const d = diameterMm * scale;
             const l = length * scale;
@@ -657,7 +723,7 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
             const hw = headWidth * scale;
             
             const startX = cx - (l + hh) / 2;
-            
+
             ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim() + '40';
             ctx.fillRect(startX, cy - hw/2, hh, hw);
             ctx.strokeRect(startX, cy - hw/2, hh, hw);
@@ -702,6 +768,14 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
             const scaleY = (canvas.height - padding * 2) / length; // Using length as height on canvas
             const scale = Math.min(scaleX, scaleY);
             
+            if (width <= 0 || length <= 0 || !Number.isFinite(scale)) {
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+                ctx.font = '14px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Dimensões Inválidas', cx, cy);
+                return;
+            }
+
             const w = width * scale;
             const h = length * scale;
             
@@ -745,6 +819,14 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
                 const scaleY = (canvas.height - padding * 2) / height;
                 const scale = Math.min(scaleX, scaleY);
                 
+                if (diameter <= 0 || height <= 0 || !Number.isFinite(scale)) {
+                    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+                    ctx.font = '14px Inter';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Dimensões Inválidas', cx, cy);
+                    return;
+                }
+
                 const w = diameter * scale;
                 const h = height * scale;
                 
@@ -793,6 +875,14 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
                     const scaleY = (canvas.height - padding * 2) / totalH;
                     const scale = Math.min(scaleX, scaleY);
                     
+                    if (totalW <= 0 || totalH <= 0 || !Number.isFinite(scale)) {
+                        ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+                        ctx.font = '14px Inter';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('Dimensões Inválidas', cx, cy);
+                        return;
+                    }
+
                     const w = width * scale;
                     const l = length * scale; // This is the true length scaled
                     const h = height * scale;
@@ -851,6 +941,15 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
                 
                 if (diameter > 0) {
                     const scale = (canvas.width - padding * 2) / diameter;
+
+                    if (!Number.isFinite(scale)) {
+                        ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+                        ctx.font = '14px Inter';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('Dimensões Inválidas', cx, cy);
+                        return;
+                    }
+
                     const r = (diameter / 2) * scale;
                     
                     ctx.beginPath();
@@ -1007,6 +1106,14 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
                     ctx.fillText(`H: ${height}`, apexX + 10, cy - h/2);
                 }
             }
+        }
+        } catch (error) {
+            console.error("Error drawing diagram:", error);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+            ctx.font = '14px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText('Erro no Diagrama', canvas.width / 2, canvas.height / 2);
         }
     }, [canvasRef, shape, data, inputs]);
 

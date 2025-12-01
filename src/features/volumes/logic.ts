@@ -20,11 +20,11 @@ export const calculateVolumes = (data: ShapeData): CalcResult | null => {
             area = 2 * Math.PI * radius * (radius + height);
 
             steps = [
-                `IDENTIFICAÇÃO: Cilindro Ø${diameter} x ${height} mm.`,
-                `ÁREA DA BASE: π * ${radius}² = ${(Math.PI * Math.pow(radius, 2)).toFixed(0)} mm².`,
-                `VOLUME: Área Base * Altura = ${volume.toFixed(0)} mm³.`,
-                `ÁREA SUPERFICIAL: 2 * π * r * (r + h) = ${area.toFixed(0)} mm².`,
-                `CONVERSÃO: ${(volume/1000000).toFixed(2)} Litros.`
+                `1. GEOMETRIA (CILINDRO):\n   - Forma de prisma circular reto.\n   - Base: Círculo de raio r = ${radius} mm.\n   - Altura: h = ${height} mm.`,
+                `2. CÁLCULO DA ÁREA DA BASE:\n   - A_base = π * r²\n   - A_base = 3.1416 * ${radius}² = ${(Math.PI * Math.pow(radius, 2)).toFixed(0)} mm².`,
+                `3. CÁLCULO DO VOLUME:\n   - Volume = Área da Base * Altura\n   - V = ${(Math.PI * Math.pow(radius, 2)).toFixed(0)} * ${height} = ${volume.toFixed(0)} mm³.`,
+                `4. CÁLCULO DA ÁREA SUPERFICIAL:\n   - Área Lateral = 2 * π * r * h\n   - Área Total = 2 * Área Base + Área Lateral = ${area.toFixed(0)} mm².`,
+                `5. CONVERSÃO PARA LITROS:\n   - 1 Litro = 1.000.000 mm³ (ou 1 dm³).\n   - V = ${volume.toFixed(0)} / 1.000.000 = ${(volume/1000000).toFixed(2)} Litros.`
             ];
         }
     } else if (subShape === 'cone') {
@@ -43,11 +43,11 @@ export const calculateVolumes = (data: ShapeData): CalcResult | null => {
             area = Math.PI * radius * (radius + g);
 
             steps = [
-                `IDENTIFICAÇÃO: Cone Ø${diameter} x ${height} mm.`,
-                `GERATRIZ: √(r² + h²) = ${g.toFixed(1)} mm.`,
-                `VOLUME: (π * r² * h) / 3 = ${volume.toFixed(0)} mm³.`,
-                `ÁREA SUPERFICIAL: π * r * (r + g) = ${area.toFixed(0)} mm².`,
-                `CONVERSÃO: ${(volume/1000000).toFixed(2)} Litros.`
+                `1. GEOMETRIA (CONE):\n   - Sólido de revolução com base circular e vértice.\n   - Raio da Base (r): ${radius} mm.\n   - Altura (h): ${height} mm.`,
+                `2. CÁLCULO DA GERATRIZ (g):\n   - Hipotenusa do triângulo retângulo formado por r e h.\n   - g = √(r² + h²) = ${g.toFixed(1)} mm.`,
+                `3. CÁLCULO DO VOLUME:\n   - O volume de um cone é 1/3 do volume de um cilindro com mesma base e altura.\n   - V = (π * r² * h) / 3 = ${volume.toFixed(0)} mm³.`,
+                `4. ÁREA SUPERFICIAL:\n   - Área Lateral = π * r * g\n   - Área Total = Área Base + Área Lateral = ${area.toFixed(0)} mm².`,
+                `5. CONVERSÃO:\n   - Capacidade: ${(volume/1000000).toFixed(2)} Litros.`
             ];
         }
     } else if (subShape === 'box') {
@@ -62,10 +62,10 @@ export const calculateVolumes = (data: ShapeData): CalcResult | null => {
             area = 2 * (length * width + length * height + width * height);
 
             steps = [
-                `IDENTIFICAÇÃO: Caixa ${length}x${width}x${height} mm.`,
-                `VOLUME: C * L * A = ${volume.toFixed(0)} mm³.`,
-                `ÁREA SUPERFICIAL: 2 * (CL + CA + LA) = ${area.toFixed(0)} mm².`,
-                `CONVERSÃO: ${(volume/1000000).toFixed(2)} Litros.`
+                `1. GEOMETRIA (PRISMA RETANGULAR):\n   - Caixa com lados ortogonais.\n   - Dimensões: Comprimento ${length} mm, Largura ${width} mm, Altura ${height} mm.`,
+                `2. CÁLCULO DO VOLUME:\n   - Multiplicação direta das três dimensões.\n   - V = C * L * A = ${volume.toFixed(0)} mm³.`,
+                `3. ÁREA SUPERFICIAL:\n   - Soma das áreas das 6 faces (3 pares de faces iguais).\n   - Área = 2*(CL) + 2*(CA) + 2*(LA) = ${area.toFixed(0)} mm².`,
+                `4. CONVERSÃO:\n   - Capacidade: ${(volume/1000000).toFixed(2)} Litros.`
             ];
         }
     } else if (subShape === 'pyramid') {
@@ -89,11 +89,10 @@ export const calculateVolumes = (data: ShapeData): CalcResult | null => {
             area = baseArea + lateralArea;
 
             steps = [
-                `IDENTIFICAÇÃO: Pirâmide Base ${length}x${width} x Altura ${height} mm.`,
-                `VOLUME: (Base * Altura) / 3 = ${volume.toFixed(0)} mm³.`,
-                `ÁREA LATERAL: Soma das faces triangulares = ${lateralArea.toFixed(0)} mm².`,
-                `ÁREA TOTAL: Base + Lateral = ${area.toFixed(0)} mm².`,
-                `CONVERSÃO: ${(volume/1000000).toFixed(2)} Litros.`
+                `1. GEOMETRIA (PIRÂMIDE RETANGULAR):\n   - Base retangular e vértice central.\n   - Base: ${length}x${width} mm. Altura: ${height} mm.`,
+                `2. CÁLCULO DO VOLUME:\n   - Similar ao cone, é 1/3 do volume do prisma correspondente.\n   - V = (Base * Altura) / 3 = ${volume.toFixed(0)} mm³.`,
+                `3. ÁREA LATERAL:\n   - Soma das áreas dos 4 triângulos laterais.\n   - Requer cálculo das alturas inclinadas (apótemas) das faces laterais.\n   - Área Lateral Total = ${lateralArea.toFixed(0)} mm².`,
+                `4. CONVERSÃO:\n   - Capacidade: ${(volume/1000000).toFixed(2)} Litros.`
             ];
         }
     } else if (subShape === 'sphere') {
@@ -107,10 +106,10 @@ export const calculateVolumes = (data: ShapeData): CalcResult | null => {
             area = 4 * Math.PI * Math.pow(radius, 2);
 
             steps = [
-                `IDENTIFICAÇÃO: Esfera Ø${diameter} mm.`,
-                `VOLUME: (4/3) * π * r³ = ${volume.toFixed(0)} mm³.`,
-                `ÁREA SUPERFICIAL: 4 * π * r² = ${area.toFixed(0)} mm².`,
-                `CONVERSÃO: ${(volume/1000000).toFixed(2)} Litros.`
+                `1. GEOMETRIA (ESFERA):\n   - Sólido perfeitamente redondo.\n   - Diâmetro: ${diameter} mm (Raio r = ${radius} mm).`,
+                `2. CÁLCULO DO VOLUME:\n   - Fórmula: V = 4/3 * π * r³\n   - V = 1.333 * 3.1416 * ${Math.pow(radius, 3).toFixed(0)} = ${volume.toFixed(0)} mm³.`,
+                `3. ÁREA SUPERFICIAL:\n   - Fórmula: A = 4 * π * r²\n   - A = 4 * 3.1416 * ${Math.pow(radius, 2).toFixed(0)} = ${area.toFixed(0)} mm².`,
+                `4. CONVERSÃO:\n   - Capacidade: ${(volume/1000000).toFixed(2)} Litros.`
             ];
         }
     }

@@ -38,13 +38,17 @@ export const calculateSquareToRound = (data: ShapeData, material: string = 'stee
             'Peso Estimado': `${weight.toFixed(2)} kg`
         },
         steps: [
-            `PREPARAÇÃO: Selecione a chapa de ${material === 'steel' ? 'Aço' : material} com espessura de ${thickness} mm.`,
-            `TRAÇAGEM: Divida o círculo superior (na vista de planta) em 12 partes iguais (quadrantes de 3 divisões).`,
-            `TRIANGULAÇÃO: Ligue cada ponto do círculo aos cantos da base quadrada. Isso formará triângulos planos nas faces e cones parciais nos cantos.`,
-            `VERDADEIRA GRANDEZA: Construa o diagrama de verdadeiras grandezas usando a altura da peça e as projeções horizontais das linhas de triangulação.`,
-            `DESENVOLVIMENTO: Transfira as medidas reais para a chapa, começando por uma linha de centro ou emenda, montando a peça triângulo por triângulo.`,
-            `CONFORMAÇÃO: Dobre as linhas de quina da base quadrada levemente e calandre/curve as seções cônicas dos cantos.`,
-            `FECHAMENTO: Confira o esquadro da base e o nivelamento do topo antes de soldar.`
+            `1. PREPARAÇÃO E TRAÇAGEM DA BASE:\n   - Selecione a chapa de ${material === 'steel' ? 'Aço' : material} com espessura de ${thickness} mm.\n   - Desenhe a vista de planta em tamanho real ou escala: um quadrado de ${width}x${width} mm com um círculo de Ø${diameter} mm centralizado (ou deslocado, se for excêntrico).`,
+            
+            `2. DIVISÃO E TRIANGULAÇÃO:\n   - Divida o círculo em 12 partes iguais (3 por quadrante).\n   - Ligue cada ponto do círculo aos dois cantos mais próximos da base quadrada.\n   - Isso cria uma série de triângulos que mapeiam a transição da forma quadrada para a redonda.`,
+            
+            `3. VERDADEIRA GRANDEZA (VG):\n   - As linhas traçadas na planta não são o comprimento real. Construa um diagrama de VG (Triângulo Retângulo):\n     • Cateto Vertical = Altura da peça (${height} mm)\n     • Cateto Horizontal = Comprimento da linha na planta\n     • Hipotenusa = Comprimento Real da linha na chapa.`,
+            
+            `4. DESENVOLVIMENTO NA CHAPA:\n   - Comece traçando a linha de emenda (geralmente o centro de um lado do quadrado).\n   - Transfira as medidas reais (Hipotenusas) triângulo por triângulo, usando compasso para marcar os arcos das distâncias.\n   - Marque as linhas de dobra (quinas) da base quadrada.`,
+            
+            `5. CONFORMAÇÃO (DOBRA E CALANDRA):\n   - Faça uma dobra leve (vinco) nas 4 linhas que correspondem aos cantos da base quadrada.\n   - As seções triangulares planas permanecem retas.\n   - As seções cônicas (nos cantos) devem ser conformadas manualmente ou na calandra, curvando progressivamente.`,
+            
+            `6. FECHAMENTO:\n   - Junte as extremidades. Verifique se a base está perfeitamente quadrada e o topo redondo e nivelado.\n   - Solde a emenda vertical e, se necessário, solde colarinhos ou flanges nas extremidades.`
         ],
         calculated: { width, diameter, height }
     };

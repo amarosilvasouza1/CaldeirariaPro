@@ -61,13 +61,15 @@ export const calculateElbow = (data: ShapeData, material: string = 'steel'): Cal
             'Peso Estimado': `${weight.toFixed(2)} kg`
         },
         steps: [
-            `PREPARAÇÃO: Selecione o tubo ou chapa de ${material === 'steel' ? 'Aço' : material} com espessura de ${thickness} mm.`,
-            `CÁLCULO: A curva será dividida em ${segments} gomos (2 pontas de ${cutAngle.toFixed(2)}° e ${segments - 2} gomos centrais de ${jointAngle.toFixed(2)}°).`,
-            `TRAÇAGEM: Trace uma linha base com o perímetro de ${pipeCircumference.toFixed(1)} mm. Divida em 12 partes iguais para gerar a senóide de corte.`,
-            `GABARITO: Desenhe a curva senoidal usando as alturas calculadas (Máx: ${h_long_full.toFixed(1)} mm, Mín: ${h_short_full.toFixed(1)} mm) para criar um gabarito de corte.`,
-            `CORTE: Envolva o gabarito no tubo, marque e corte. Repita para todos os gomos.`,
-            `MONTAGEM: Alinhe os gomos rotacionando-os 180° um em relação ao outro para formar a curva.`,
-            `SOLDAGEM: Ponteie as juntas garantindo o alinhamento interno e solde o perímetro.`
+            `1. PREPARAÇÃO E CÁLCULO:\n   - Material: Tubo ou chapa de ${material === 'steel' ? 'Aço' : material}, espessura ${thickness} mm.\n   - A curva de ${angle}° será dividida em ${segments} gomos.\n   - Ângulo de corte de cada gomo (Alpha): ${cutAngle.toFixed(2)}°.`,
+            
+            `2. TRAÇAGEM DO GABARITO (DESENVOLVIMENTO):\n   - Trace uma linha reta com o comprimento do perímetro: ${pipeCircumference.toFixed(1)} mm.\n   - Divida essa linha em 12 partes iguais (pontos 0 a 12).\n   - Em cada ponto, marque a altura correspondente da curva senoidal (usando as alturas Máx: ${h_long_full.toFixed(1)} mm e Mín: ${h_short_full.toFixed(1)} mm calculadas).\n   - Ligue os pontos com uma régua flexível para formar a onda suave.`,
+            
+            `3. CORTE DOS GOMOS:\n   - Envolva o gabarito no tubo (ou trace na chapa plana antes de calandrar).\n   - Marque a linha de corte e a linha de centro (costas da curva).\n   - Corte os ${segments} gomos. As pontas (primeiro e último) são metade de um gomo central.`,
+            
+            `4. MONTAGEM E ALINHAMENTO:\n   - Posicione o primeiro gomo.\n   - Encoste o segundo gomo girado 180° em relação ao primeiro. As partes mais longas devem se encontrar com as mais curtas do vizinho.\n   - Verifique se o ângulo formado entre os eixos é de ${jointAngle.toFixed(2)}°.`,
+            
+            `5. SOLDAGEM:\n   - Ponteie em 4 pontos (cruz) cada junta.\n   - Confira o ângulo total da curva (${angle}°) e o raio (${radius} mm) antes de soldar definitivamente.\n   - Solde o perímetro de cada junta, controlando o calor para não deformar.`
         ],
         calculated: { 
             diameter, radius, segments, angle, cutAngle, 

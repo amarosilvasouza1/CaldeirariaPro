@@ -190,7 +190,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, shape, inputs, can
                 <h3 style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '1rem', marginBottom: '1rem', color: '#f59e0b' }}>Passo a Passo de Fabricação</h3>
                 <ul style={{ listStyle: 'none', counterReset: 'step-counter' }}>
                     {results.steps.map((step, index) => (
-                        <li key={index} style={{ position: 'relative', paddingLeft: '2.5rem', marginBottom: '1rem', lineHeight: '1.6' }}>
+                        <li key={index} style={{ position: 'relative', paddingLeft: '2.5rem', marginBottom: '1rem', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
                             <span style={{ position: 'absolute', left: 0, top: 0, width: '1.8rem', height: '1.8rem', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 'bold', color: '#f59e0b' }}>
                                 {index + 1}
                             </span>

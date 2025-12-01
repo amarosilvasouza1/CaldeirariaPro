@@ -76,13 +76,15 @@ export const calculateStairs = (data: ShapeData, material: string = 'steel'): Ca
             'Peso Estimado': `${weight.toFixed(2)} kg`
         },
         steps: [
-            `PREPARAÇÃO: Verifique o desnível de ${height} mm e o espaço disponível na base de ${base} mm.`,
-            `CÁLCULO: A escada terá ${numSteps} degraus com espelho de ${rise.toFixed(1)} mm e piso de ${run.toFixed(1)} mm.`,
-            `VALIDAÇÃO: A regra de Blondel resultou em ${blondel.toFixed(1)} mm. O ângulo é de ${angleDeg.toFixed(1)}°.`,
-            `CORTE DOS BANZOS: Corte 2 perfis (U ou I) com comprimento de ${stringerLength.toFixed(1)} mm. Corte as extremidades no ângulo de ${angleDeg.toFixed(1)}° para apoio no chão e na laje.`,
-            `MARCAÇÃO: Marque a posição dos degraus nos banzos usando um esquadro ou gabarito com as medidas de espelho e piso.`,
-            `FIXAÇÃO: Solde ou aparafuse os suportes dos degraus ou os próprios degraus nos banzos.`,
-            `INSTALAÇÃO: Posicione a escada, nivele e fixe firmemente no chão e na estrutura superior.`
+            `1. LEVANTAMENTO DE MEDIDAS:\n   - Altura Total (Desnível): ${height} mm.\n   - Espaço Disponível (Base): ${base} mm.\n   - Verifique se o piso inferior e a laje superior estão nivelados.`,
+            
+            `2. CÁLCULO E CONFERÊNCIA:\n   - A escada terá ${numSteps} degraus.\n   - Espelho (Altura do degrau): ${rise.toFixed(1)} mm.\n   - Piso (Profundidade do degrau): ${run.toFixed(1)} mm.\n   - Regra de Blondel (2E + P): ${blondel.toFixed(1)} mm. (Ideal: 630-650mm).`,
+            
+            `3. CORTE DOS BANZOS (VIGAS LATERAIS):\n   - Material: Perfil U ou I, comprimento ${stringerLength.toFixed(1)} mm.\n   - Corte as extremidades no ângulo de ${angleDeg.toFixed(1)}° para que o banzo apoie totalmente no chão e na laje.\n   - DICA: Corte os dois banzos juntos (espelhados) para garantir simetria.`,
+            
+            `4. MARCAÇÃO DOS DEGRAUS:\n   - Use um esquadro de carpinteiro ou gabarito.\n   - Marque a altura (${rise.toFixed(1)}) e a pisada (${run.toFixed(1)}) repetidamente ao longo do banzo.\n   - Use um nível de bolha para garantir que os degraus ficarão horizontais quando a escada estiver inclinada.`,
+            
+            `5. MONTAGEM E INSTALAÇÃO:\n   - Fixe os suportes de degrau ou solde os degraus diretamente nos banzos.\n   - Posicione a escada no local. Fixe primeiro a parte superior (laje) e confira o nível antes de fixar a base.\n   - Instale o corrimão (obrigatório para segurança) a 900mm de altura.`
         ],
         calculated: { height, base, numSteps, rise, run, stringerLength }
     };

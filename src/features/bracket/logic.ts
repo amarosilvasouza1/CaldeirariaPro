@@ -81,12 +81,15 @@ export const calculateBracket = (data: ShapeData, material: string = 'steel'): C
             'Peso (Diagonal)': `${weight.toFixed(2)} kg`
         },
         steps: [
-            `PREPARAÇÃO: Selecione um perfil de ${width}x${thickness} mm.`,
-            `CÁLCULO: A diagonal terá ${diagonal.toFixed(1)} mm. A carga de ${load} kg gera uma força de ${forceKg.toFixed(1)} kgf na peça.`,
-            `ANÁLISE: A tensão calculada é de ${stressMPa.toFixed(1)} MPa. Status: ${status} (Fator de Segurança: ${safetyFactor}).`,
-            `CORTE: Corte a diagonal com os ângulos de ${angleDeg.toFixed(2)}° (base) e ${topAngleDeg.toFixed(2)}° (topo).`,
-            `MONTAGEM: Solde a mão francesa garantindo o esquadro perfeito entre a parede e o suporte.`,
-            `TESTE: Se possível, realize um teste de carga progressivo antes do uso final.`
+            `1. ANÁLISE E PREPARAÇÃO:\n   - Perfil Selecionado: ${width}x${thickness} mm.\n   - Carga de Projeto: ${load} kg.\n   - Fator de Segurança: ${safetyFactor}.\n   - IMPORTANTE: Verifique se a parede ou coluna onde será fixado suporta essa carga.`,
+            
+            `2. CÁLCULO ESTRUTURAL:\n   - A diagonal (hipotenusa) terá ${diagonal.toFixed(1)} mm.\n   - A força de compressão/tração na diagonal será de ${forceKg.toFixed(1)} kgf.\n   - Tensão Calculada: ${stressMPa.toFixed(1)} MPa. Status: ${status}.`,
+            
+            `3. CORTE DOS PERFIS:\n   - Corte a peça diagonal com comprimento de ${diagonal.toFixed(1)} mm.\n   - Ângulo de corte inferior (Base): ${angleDeg.toFixed(2)}°.\n   - Ângulo de corte superior (Topo): ${topAngleDeg.toFixed(2)}°.`,
+            
+            `4. MONTAGEM:\n   - Posicione a peça vertical (H) e a horizontal (B) no esquadro (90°).\n   - Encaixe a diagonal. Se os ângulos estiverem corretos, o fechamento será perfeito.\n   - Ponteie os cantos.`,
+            
+            `5. SOLDAGEM E ACABAMENTO:\n   - Realize a soldagem completa das juntas. Para cargas altas, use eletrodo 7018 ou MIG/MAG com boa penetração.\n   - Se necessário, adicione uma chapa de reforço (gusset) nos cantos internos para aumentar a rigidez.\n   - Limpe a solda e aplique proteção anticorrosiva.`
         ],
         calculated: { height, base, width, diagonal, angleDeg, topAngleDeg }
     };
