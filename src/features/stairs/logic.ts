@@ -76,12 +76,7 @@ export const calculateStairs = (data: ShapeData, material: string = 'steel'): Ca
     const volumeDm3 = (totalAreaMm2 * thickness) / 1_000_000; // Assuming thickness is in mm, volume in dm3 (liters)
 
     // Placeholder for other new metrics
-    const diagonal = stringerLength; // Assuming diagonal refers to stringer length
-    const topAngleDeg = 90 - angleDeg; // Angle at the top
-    const forceKg = 0; // Not calculated in this snippet
-    const stressMPa = 0; // Not calculated in this snippet
-    const status = 'Calculado'; // Default status
-    const maxLoadKg = 0; // Not calculated in this snippet
+
 
 
     return {
