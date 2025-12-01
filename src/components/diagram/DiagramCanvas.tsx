@@ -50,7 +50,11 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
 
-        const padding = 80; // Increased padding to prevent overflow of labels
+        const isMobile = canvas.width < 600;
+        const baseFontSize = isMobile ? 10 : 14;
+        const labelOffset = isMobile ? 10 : 20;
+        const padding = isMobile ? 40 : 80; // Reduced padding for mobile
+
 
         if (shape === 'cylinder') {
             // --- CYLINDER IMPLEMENTATION ---
@@ -297,7 +301,7 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
 
             if (bboxW <= 0 || bboxH <= 0 || !Number.isFinite(scale) || R_dev <= 0 || r_dev < 0) {
                 ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
-                ctx.font = '14px Inter';
+                ctx.font = `${baseFontSize}px Inter`;
                 ctx.textAlign = 'center';
                 ctx.fillText('Dimensões Inválidas', cx, cy);
                 return;
@@ -320,13 +324,13 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
 
             // Helper to draw arrowheads
             const drawArrow = (fromX: number, fromY: number, toX: number, toY: number, color: string = '#000000') => {
-                const headlen = 12; // Even larger head
+                const headlen = isMobile ? 8 : 12; // Smaller head for mobile
                 const dx = toX - fromX;
                 const dy = toY - fromY;
                 const angle = Math.atan2(dy, dx);
                 ctx.strokeStyle = color;
                 ctx.fillStyle = color;
-                ctx.lineWidth = 2.5;
+                ctx.lineWidth = isMobile ? 1.5 : 2.5;
                 ctx.beginPath();
                 ctx.moveTo(fromX, fromY);
                 ctx.lineTo(toX, toY);
@@ -354,7 +358,7 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
             ctx.fillStyle = gradient;
             ctx.fill();
             ctx.strokeStyle = lineColor;
-            ctx.lineWidth = 3; // Good thickness
+            ctx.lineWidth = isMobile ? 2 : 3; // Thinner lines for mobile
             ctx.stroke();
 
             // Draw Chord Line (Dashed)
@@ -365,7 +369,7 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
 
             ctx.setLineDash([8, 6]);
             ctx.strokeStyle = auxColor;
-            ctx.lineWidth = 2;
+            ctx.lineWidth = isMobile ? 1.5 : 2;
             ctx.beginPath();
             ctx.moveTo(x1_out, y1_out);
             ctx.lineTo(x2_out, y2_out);
@@ -375,7 +379,7 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
             // Draw Apex Point (Compass Pivot) - Prominent Crosshair
             ctx.strokeStyle = dimColor;
             ctx.lineWidth = 2;
-            const crossSize = 10;
+            const crossSize = isMobile ? 6 : 10;
             ctx.beginPath();
             ctx.moveTo(apexX - crossSize, apexY);
             ctx.lineTo(apexX + crossSize, apexY);
@@ -384,15 +388,15 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
             ctx.stroke();
             
             ctx.beginPath();
-            ctx.arc(apexX, apexY, 5, 0, Math.PI * 2);
+            ctx.arc(apexX, apexY, isMobile ? 3 : 5, 0, Math.PI * 2);
             ctx.stroke();
 
             // Label for Apex
             ctx.fillStyle = dimColor;
-            ctx.font = 'bold 14px Inter';
+            ctx.font = `bold ${baseFontSize}px Inter`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'bottom';
-            ctx.fillText('Ponto do Compasso', apexX, apexY - 15);
+            ctx.fillText('Ponto do Compasso', apexX, apexY - labelOffset);
 
             // 1. R1 (Inner Radius) & R2 (Outer Radius)
             const R1 = r_dev;
@@ -411,7 +415,7 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
             ctx.translate((apexX + r2LineX) / 2, (apexY + r2LineY) / 2);
             ctx.rotate(midAngle + Math.PI/2); 
             ctx.fillStyle = dimColor;
-            ctx.font = 'bold 14px Inter';
+            ctx.font = `bold ${baseFontSize}px Inter`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'bottom';
             // Explicit label with both terms
@@ -429,7 +433,7 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
                 ctx.translate((apexX + r1LineX) / 2, (apexY + r1LineY) / 2);
                 ctx.rotate(startAngle + Math.PI/2);
                 ctx.fillStyle = dimColor;
-                ctx.font = 'bold 14px Inter';
+                ctx.font = `bold ${baseFontSize}px Inter`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'bottom';
                 ctx.fillText(`R1 = ${R1.toFixed(1)}`, 0, -5);
@@ -444,7 +448,7 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
             const l_end_y = apexY + Math.sin(endAngle) * R2 * scale;
             
             // Draw parallel dimension line for L
-            const offsetL = 45; // Increased offset further
+            const offsetL = isMobile ? 25 : 45; // Reduced offset for mobile
             const l_p1_x = l_start_x + Math.cos(endAngle + Math.PI/2) * offsetL;
             const l_p1_y = l_start_y + Math.sin(endAngle + Math.PI/2) * offsetL;
             const l_p2_x = l_end_x + Math.cos(endAngle + Math.PI/2) * offsetL;
@@ -469,7 +473,7 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
             ctx.translate((l_p1_x + l_p2_x) / 2, (l_p1_y + l_p2_y) / 2);
             ctx.rotate(endAngle + Math.PI/2);
             ctx.fillStyle = dimColor;
-            ctx.font = 'bold 14px Inter';
+            ctx.font = `bold ${baseFontSize}px Inter`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'bottom';
             ctx.fillText(`L = ${L_val.toFixed(1)}`, 0, -5);
@@ -478,7 +482,7 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
 
             // 3. Angle Label (alpha)
             ctx.fillStyle = textColor;
-            ctx.font = 'bold 16px Inter';
+            ctx.font = `bold ${baseFontSize + 2}px Inter`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             // Move angle label closer to apex to avoid middle clutter
@@ -493,10 +497,10 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
             const c_mid_x = (x1_out + x2_out) / 2;
             const c_mid_y = (y1_out + y2_out) / 2;
             ctx.fillStyle = textColor;
-            ctx.font = 'bold 14px Inter';
+            ctx.font = `bold ${baseFontSize}px Inter`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'top';
-            ctx.fillText(`C = ${corda.toFixed(1)}`, c_mid_x, c_mid_y + 20); // More offset
+            ctx.fillText(`C = ${corda.toFixed(1)}`, c_mid_x, c_mid_y + labelOffset); 
 
             // Inner Chord A (if R1 > 0)
             if (R1 > 0) {
@@ -520,7 +524,7 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
                 const chordA = 2 * R1 * Math.sin((theta * Math.PI / 180) / 2);
                 
                 ctx.fillStyle = textColor;
-                ctx.fillText(`A = ${chordA.toFixed(1)}`, a_mid_x, a_mid_y - 30); // More offset
+                ctx.fillText(`A = ${chordA.toFixed(1)}`, a_mid_x, a_mid_y - labelOffset - 10); 
             }
 
             // 5. h1 (Inner Sagitta) & h2 (Outer Sagitta)
@@ -553,22 +557,24 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
             const arcLenInner = (theta / 360) * 2 * Math.PI * r_dev;
 
             ctx.fillStyle = textColor;
-            ctx.font = '13px Inter';
+            ctx.font = `${baseFontSize - 1}px Inter`;
             ctx.textAlign = 'left';
             // Position at top left of canvas
-            let infoY = 40;
+            let infoY = isMobile ? 30 : 40;
+            const infoLineHeight = isMobile ? 15 : 20;
             ctx.fillText(`Perímetro Externo: ${arcLenOuter.toFixed(1)} mm`, 20, infoY);
             if (r_dev > 0) {
-                infoY += 20;
+                infoY += infoLineHeight;
                 ctx.fillText(`Perímetro Interno: ${arcLenInner.toFixed(1)} mm`, 20, infoY);
             }
 
             // 7. Extra Info (Base info)
             const g_val = R_dev - r_dev;
-            ctx.font = '14px Inter';
+            ctx.font = `${baseFontSize}px Inter`;
             ctx.fillStyle = auxColor;
             ctx.textAlign = 'center';
             ctx.fillText(`DADOS: Base Ø${d1} | Topo Ø${d2} | Altura ${h_input} | Geratriz ${g_val.toFixed(1)}`, cx, canvas.height - 10);
+
 
         } else if (shape === 'square-to-round') {
             const width = Number(data.width) || 0;
