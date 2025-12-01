@@ -165,16 +165,18 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, shape, inputs, can
         <section className="glass-panel">
             <h2><span style={{ marginRight: '0.5rem' }}>📐</span> Visualização & Resultados</h2>
             
-            <div style={{ background: 'rgba(0, 0, 0, 0.3)', borderRadius: '8px', padding: '1rem', marginBottom: '2rem', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px', border: '1px dashed rgba(148, 163, 184, 0.2)' }}>
-                {/* Canvas is rendered by parent but we can wrap it here if passed as children, but for now we assume it's controlled elsewhere or passed as prop. 
-                    Actually, it's better to render the DiagramCanvas component here or in the parent. 
-                    Let's assume the parent renders DiagramCanvas and passes the ref here for PDF generation, 
-                    BUT visually the canvas should be inside this panel. 
-                    So let's accept a component or children. 
-                    Wait, the design had the canvas inside the results panel.
-                    I'll render the canvas element here and pass the ref to it.
-                */}
-                <canvas ref={canvasRef} style={{ maxWidth: '100%', maxHeight: '400px' }} />
+            <div style={{ 
+                background: 'rgba(0, 0, 0, 0.3)', 
+                borderRadius: '8px', 
+                padding: '1rem', 
+                marginBottom: '2rem', 
+                border: '1px dashed rgba(148, 163, 184, 0.2)',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                width: '100%'
+            }}>
+                <canvas ref={canvasRef} style={{ maxWidth: '100%', height: 'auto' }} /> 
             </div>
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>

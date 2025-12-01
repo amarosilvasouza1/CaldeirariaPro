@@ -1,7 +1,13 @@
 export const DENSITIES: { [key: string]: number } = {
     'steel': 7.85,
+    'galvanized': 7.85,
     'stainless': 7.90,
-    'aluminum': 2.70
+    'aluminum': 2.70,
+    'copper': 8.96,
+    'brass': 8.73,
+    'bronze': 8.80,
+    'cast_iron': 7.20,
+    'nylon': 1.15
 };
 
 // Bolt Data (Metric Coarse)

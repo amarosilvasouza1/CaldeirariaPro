@@ -21,8 +21,8 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
         // Resize canvas to parent
         const wrapper = canvas.parentElement;
         if (wrapper) {
-            const newWidth = wrapper.clientWidth;
-            const newHeight = 400; // Fixed height for consistency
+            const newWidth = wrapper.clientWidth; // Adapt to screen width
+            const newHeight = 750; // Keep height for detail
             if (canvas.width !== newWidth || canvas.height !== newHeight) {
                 canvas.width = newWidth;
                 canvas.height = newHeight;
@@ -41,82 +41,198 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
         ctx.lineWidth = 2;
         ctx.fillStyle = fillColor;
 
+        // High Contrast Colors for Dark Theme
+        const lineColor = '#ffffff'; // White for main lines
+        const dimColor = '#FFD700';  // Gold for dimensions
+        const textColor = '#ffffff'; // White for text
+        const auxColor = '#94a3b8';  // Gray for aux info
+
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
 
-        const padding = 40; // Reduced padding for better zoom
+        const padding = 80; // Increased padding to prevent overflow of labels
 
         if (shape === 'cylinder') {
-            const width = Number(data.width) || 0;
-            const height = Number(data.height) || 0;
+            // --- CYLINDER IMPLEMENTATION ---
             const diameter = inputs ? Number(inputs.diameter) : 0;
+            const height = inputs ? Number(inputs.height) : 0;
             const thickness = inputs ? Number(inputs.thickness) : 0;
+            const circumference = diameter * Math.PI;
+
+            // Layout: 3D Cylinder on Left, Unrolled Pattern on Right (or Below depending on aspect)
+            // Given 750px height, we can stack them vertically or side-by-side.
+            // Let's do Side-by-Side for better use of width.
             
-            // Calculate scale to fit
-            const scaleX = (canvas.width - padding * 2) / width;
-            const scaleY = (canvas.height - padding * 2) / height;
-            const scale = Math.min(scaleX, scaleY);
+            // 1. 3D Cylinder View
+            // Ellipse height factor (perspective)
+            const ellipseFactor = 0.3; 
+            const cylWidth = diameter;
+            const cylHeight = height;
+            
+            // 2. Unrolled Pattern
+            const patternWidth = circumference;
+            const patternHeight = height;
 
-            const w = width * scale;
-            const h = height * scale;
+            // Total bounding box for layout
+            // Gap between views
+            const gap = diameter * 0.5; 
+            const totalWidth = cylWidth + gap + patternWidth;
+            const totalHeight = Math.max(cylHeight + cylWidth * ellipseFactor, patternHeight);
 
-            if (width <= 0 || height <= 0 || !Number.isFinite(scale)) {
-                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+            // Scale to fit canvas
+            const scale = Math.min(
+                (canvas.width - padding * 2) / totalWidth,
+                (canvas.height - padding * 2) / totalHeight
+            );
+
+            if (totalWidth <= 0 || totalHeight <= 0 || !Number.isFinite(scale)) {
+                ctx.fillStyle = auxColor;
                 ctx.font = '14px Inter';
                 ctx.textAlign = 'center';
                 ctx.fillText('Dimensões Inválidas', cx, cy);
                 return;
             }
-            
+
+            // Calculate positions
+            const startX = cx - (totalWidth * scale) / 2;
+            const cylX = startX + (cylWidth * scale) / 2;
+            const patternX = startX + (cylWidth * scale) + (gap * scale) + (patternWidth * scale) / 2;
+            const centerY = cy;
+
+            // --- DRAW 3D CYLINDER ---
+            const r_cyl = (cylWidth * scale) / 2;
+            const h_cyl = cylHeight * scale;
+            const ellipseH = r_cyl * ellipseFactor;
+
+            // Top Ellipse
             ctx.beginPath();
-            ctx.rect(cx - w/2, cy - h/2, w, h);
+            ctx.ellipse(cylX, centerY - h_cyl / 2, r_cyl, ellipseH, 0, 0, 2 * Math.PI);
             ctx.fillStyle = fillColor;
             ctx.fill();
+            ctx.strokeStyle = lineColor;
+            ctx.lineWidth = 2;
             ctx.stroke();
 
-            // Dimensions logic
-            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-main').trim();
+            // Bottom Ellipse (Half visible)
+            ctx.beginPath();
+            ctx.ellipse(cylX, centerY + h_cyl / 2, r_cyl, ellipseH, 0, 0, Math.PI);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.ellipse(cylX, centerY + h_cyl / 2, r_cyl, ellipseH, 0, Math.PI, 2 * Math.PI);
+            ctx.strokeStyle = auxColor; // Hidden part dashed or lighter
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.strokeStyle = lineColor;
+
+            // Sides
+            ctx.beginPath();
+            ctx.moveTo(cylX - r_cyl, centerY - h_cyl / 2);
+            ctx.lineTo(cylX - r_cyl, centerY + h_cyl / 2);
+            ctx.moveTo(cylX + r_cyl, centerY - h_cyl / 2);
+            ctx.lineTo(cylX + r_cyl, centerY + h_cyl / 2);
+            ctx.stroke();
+
+            // Dimensions for Cylinder
+            ctx.fillStyle = dimColor;
+            ctx.strokeStyle = dimColor;
+            ctx.lineWidth = 1;
             ctx.font = '12px Inter';
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
 
-            // Width Dimension (L)
+            // Height (H)
+            const dimX = cylX + r_cyl + 20;
             ctx.beginPath();
-            ctx.moveTo(cx - w/2, cy - h/2 - 15);
-            ctx.lineTo(cx + w/2, cy - h/2 - 15);
+            ctx.moveTo(dimX, centerY - h_cyl / 2);
+            ctx.lineTo(dimX, centerY + h_cyl / 2);
             ctx.stroke();
             // Ticks
-            ctx.moveTo(cx - w/2, cy - h/2 - 10);
-            ctx.lineTo(cx - w/2, cy - h/2 - 20);
-            ctx.moveTo(cx + w/2, cy - h/2 - 10);
-            ctx.lineTo(cx + w/2, cy - h/2 - 20);
-            ctx.stroke();
-            // Text
-            ctx.fillText(`L = ${width.toFixed(1)} mm`, cx, cy - h/2 - 25);
-
-            // Height Dimension (H)
-            ctx.beginPath();
-            ctx.moveTo(cx + w/2 + 15, cy - h/2);
-            ctx.lineTo(cx + w/2 + 15, cy + h/2);
-            ctx.stroke();
-            // Ticks
-            ctx.moveTo(cx + w/2 + 10, cy - h/2);
-            ctx.lineTo(cx + w/2 + 20, cy - h/2);
-            ctx.moveTo(cx + w/2 + 10, cy + h/2);
-            ctx.lineTo(cx + w/2 + 20, cy + h/2);
+            ctx.moveTo(dimX - 5, centerY - h_cyl / 2);
+            ctx.lineTo(dimX + 5, centerY - h_cyl / 2);
+            ctx.moveTo(dimX - 5, centerY + h_cyl / 2);
+            ctx.lineTo(dimX + 5, centerY + h_cyl / 2);
             ctx.stroke();
             // Text
             ctx.save();
-            ctx.translate(cx + w/2 + 30, cy);
+            ctx.translate(dimX + 15, centerY);
             ctx.rotate(Math.PI / 2);
-            ctx.fillText(`H = ${height} mm`, 0, 0);
+            ctx.fillText(`H = ${height}`, 0, 0);
             ctx.restore();
 
+            // Diameter (Ø)
+            ctx.beginPath();
+            ctx.moveTo(cylX - r_cyl, centerY - h_cyl / 2 - ellipseH - 20);
+            ctx.lineTo(cylX + r_cyl, centerY - h_cyl / 2 - ellipseH - 20);
+            ctx.stroke();
+            ctx.moveTo(cylX - r_cyl, centerY - h_cyl / 2 - ellipseH - 15);
+            ctx.lineTo(cylX - r_cyl, centerY - h_cyl / 2 - ellipseH - 25);
+            ctx.moveTo(cylX + r_cyl, centerY - h_cyl / 2 - ellipseH - 15);
+            ctx.lineTo(cylX + r_cyl, centerY - h_cyl / 2 - ellipseH - 25);
+            ctx.stroke();
+            ctx.fillText(`Ø Int = ${diameter}`, cylX, centerY - h_cyl / 2 - ellipseH - 30);
+
+
+            // --- DRAW UNROLLED PATTERN ---
+            const w_pat = patternWidth * scale;
+            const h_pat = patternHeight * scale;
+            const pX = patternX - w_pat / 2;
+            const pY = centerY - h_pat / 2;
+
+            ctx.fillStyle = fillColor;
+            ctx.strokeStyle = lineColor;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.rect(pX, pY, w_pat, h_pat);
+            ctx.fill();
+            ctx.stroke();
+
+            // Dimensions for Pattern
+            ctx.fillStyle = dimColor;
+            ctx.strokeStyle = dimColor;
+            ctx.lineWidth = 1;
+
+            // Circumference (L)
+            ctx.beginPath();
+            ctx.moveTo(pX, pY - 15);
+            ctx.lineTo(pX + w_pat, pY - 15);
+            ctx.stroke();
+            ctx.moveTo(pX, pY - 10);
+            ctx.lineTo(pX, pY - 20);
+            ctx.moveTo(pX + w_pat, pY - 10);
+            ctx.lineTo(pX + w_pat, pY - 20);
+            ctx.stroke();
+            ctx.fillText(`Perímetro (L) = ${circumference.toFixed(1)}`, patternX, pY - 25);
+
+            // Diagonal Check (Esquadro)
+            const diagonal = Math.sqrt(Math.pow(circumference, 2) + Math.pow(height, 2));
+            ctx.strokeStyle = auxColor;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(pX, pY + h_pat);
+            ctx.lineTo(pX + w_pat, pY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Diagonal Label
+            ctx.fillStyle = auxColor;
+            ctx.save();
+            ctx.translate(patternX, centerY);
+            const angle = Math.atan2(-h_pat, w_pat);
+            ctx.rotate(angle);
+            ctx.fillText(`Diagonal (Esquadro) = ${diagonal.toFixed(1)}`, 0, -5);
+            ctx.restore();
+
+            // Labels
+            ctx.fillStyle = textColor;
+            ctx.font = 'bold 14px Inter';
+            ctx.fillText("VISTA 3D", cylX, centerY + h_cyl / 2 + 40);
+            ctx.fillText("PADRÃO PLANIFICADO", patternX, centerY + h_pat / 2 + 40);
+
             // Extra Info
-            ctx.font = '11px Inter';
-            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
-            const circ = (Math.PI * (diameter + thickness)).toFixed(1);
-            ctx.fillText(`Ø Int: ${diameter}mm | Esp: ${thickness}mm | Circ: ${circ}mm`, cx, cy + h/2 + 20);
+            ctx.font = '12px Inter';
+            ctx.fillStyle = auxColor;
+
+            ctx.fillText(`DADOS: Ø Int ${diameter}mm | Esp ${thickness}mm | Ø Médio ${diameter + thickness}mm`, cx, canvas.height - 20);
         } else if (shape === 'cone') {
             const R_dev = Number(data.R_dev) || 0;
             const r_dev = Number(data.r_dev) || 0;
@@ -193,138 +309,331 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
             const apexX = cx - bboxCenterX * scale;
             const apexY = cy - bboxCenterY * scale;
 
-            // Draw
-            ctx.beginPath();
-            ctx.arc(apexX, apexY, R_dev * scale, startAngle, endAngle);
-            ctx.stroke();
+            // Revert to Dark Theme Style (Transparent Background)
+            // No fillRect for white background
             
-            ctx.beginPath();
-            ctx.arc(apexX, apexY, r_dev * scale, startAngle, endAngle);
-            ctx.stroke();
+            // High Contrast Colors for Dark Theme
+            const lineColor = '#ffffff'; // White for main lines
+            const dimColor = '#facc15'; // Bright Yellow for dimensions (High visibility)
+            const auxColor = '#94a3b8'; // Light gray for aux lines
+            const textColor = '#ffffff'; // White text
+
+            // Helper to draw arrowheads
+            const drawArrow = (fromX: number, fromY: number, toX: number, toY: number, color: string = '#000000') => {
+                const headlen = 12; // Even larger head
+                const dx = toX - fromX;
+                const dy = toY - fromY;
+                const angle = Math.atan2(dy, dx);
+                ctx.strokeStyle = color;
+                ctx.fillStyle = color;
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(fromX, fromY);
+                ctx.lineTo(toX, toY);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
+                ctx.lineTo(toX, toY);
+                ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
+                ctx.fill(); 
+            };
+
+            // Draw Filled Shape (Subtle Gradient on Dark)
+            const gradient = ctx.createLinearGradient(minX * scale + cx, minY * scale + cy, maxX * scale + cx, maxY * scale + cy);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.05)'); 
+            gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.15)'); 
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0.05)');
 
             ctx.beginPath();
+            // Outer Arc
+            ctx.arc(apexX, apexY, R_dev * scale, startAngle, endAngle, false);
+            // Inner Arc (Anticlockwise)
+            ctx.arc(apexX, apexY, r_dev * scale, endAngle, startAngle, true);
+            ctx.closePath();
+            
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            ctx.strokeStyle = lineColor;
+            ctx.lineWidth = 3; // Good thickness
+            ctx.stroke();
+
+            // Draw Chord Line (Dashed)
             const x1_out = apexX + Math.cos(startAngle) * R_dev * scale;
             const y1_out = apexY + Math.sin(startAngle) * R_dev * scale;
-            const x1_in = apexX + Math.cos(startAngle) * r_dev * scale;
-            const y1_in = apexY + Math.sin(startAngle) * r_dev * scale;
-            ctx.moveTo(x1_in, y1_in);
-            ctx.lineTo(x1_out, y1_out);
-            ctx.stroke();
-
             const x2_out = apexX + Math.cos(endAngle) * R_dev * scale;
             const y2_out = apexY + Math.sin(endAngle) * R_dev * scale;
-            const x2_in = apexX + Math.cos(endAngle) * r_dev * scale;
-            const y2_in = apexY + Math.sin(endAngle) * r_dev * scale;
-            ctx.moveTo(x2_in, y2_in);
-            ctx.lineTo(x2_out, y2_out);
-            ctx.stroke();
 
-            // Chord Line (Dashed)
-            ctx.setLineDash([5, 5]);
-            ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim() + '60';
+            ctx.setLineDash([8, 6]);
+            ctx.strokeStyle = auxColor;
+            ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(x1_out, y1_out);
             ctx.lineTo(x2_out, y2_out);
             ctx.stroke();
             ctx.setLineDash([]);
-            ctx.strokeStyle = strokeColor;
 
-            // Dimensions
-            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-main').trim();
-            ctx.font = '12px Inter';
-            ctx.textAlign = 'left';
-            ctx.fillText(`R Maior = ${R_dev.toFixed(1)}`, x2_out + 10, y2_out);
-            
-            if (r_dev > 0) {
-                ctx.fillText(`r Menor = ${r_dev.toFixed(1)}`, x2_in + 10, y2_in);
-            }
-
-            // Geratriz (g) Dimension
-            const midAngle = (startAngle + endAngle) / 2;
-            const g_val = R_dev - r_dev;
-            const g_x1 = apexX + Math.cos(midAngle) * r_dev * scale;
-            const g_y1 = apexY + Math.sin(midAngle) * r_dev * scale;
-            const g_x2 = apexX + Math.cos(midAngle) * R_dev * scale;
-            const g_y2 = apexY + Math.sin(midAngle) * R_dev * scale;
-
-            // Draw arrow/line for g
+            // Draw Apex Point (Compass Pivot) - Prominent Crosshair
+            ctx.strokeStyle = dimColor;
+            ctx.lineWidth = 2;
+            const crossSize = 10;
             ctx.beginPath();
-            ctx.moveTo(g_x1, g_y1);
-            ctx.lineTo(g_x2, g_y2);
-            ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--accent').trim();
+            ctx.moveTo(apexX - crossSize, apexY);
+            ctx.lineTo(apexX + crossSize, apexY);
+            ctx.moveTo(apexX, apexY - crossSize);
+            ctx.lineTo(apexX, apexY + crossSize);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.arc(apexX, apexY, 5, 0, Math.PI * 2);
             ctx.stroke();
 
-            // Label g
-            ctx.save();
-            ctx.translate((g_x1 + g_x2) / 2, (g_y1 + g_y2) / 2);
-            ctx.rotate(midAngle + Math.PI / 2); // Rotate to align with radius (perpendicular)
+            // Label for Apex
+            ctx.fillStyle = dimColor;
+            ctx.font = 'bold 14px Inter';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'bottom';
-            ctx.fillText(`g = ${g_val.toFixed(1)}`, 0, -5);
+            ctx.fillText('Ponto do Compasso', apexX, apexY - 15);
+
+            // 1. R1 (Inner Radius) & R2 (Outer Radius)
+            const R1 = r_dev;
+            const R2 = R_dev;
+            
+            // Draw R2 (Outer Radius) - Make it very explicit "Compass Size"
+            const midAngle = (startAngle + endAngle) / 2;
+            const r2LineX = apexX + Math.cos(midAngle) * R2 * scale;
+            const r2LineY = apexY + Math.sin(midAngle) * R2 * scale;
+            
+            ctx.setLineDash([4, 4]);
+            drawArrow(apexX, apexY, r2LineX, r2LineY, dimColor);
+            ctx.setLineDash([]);
+
+            ctx.save();
+            ctx.translate((apexX + r2LineX) / 2, (apexY + r2LineY) / 2);
+            ctx.rotate(midAngle + Math.PI/2); 
+            ctx.fillStyle = dimColor;
+            ctx.font = 'bold 14px Inter';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            // Explicit label with both terms
+            ctx.fillText(`Raio Maior (R2) / Compasso = ${R2.toFixed(1)}`, 0, -5);
+            ctx.restore();
+
+            // Draw R1 (Inner Radius) - If exists
+            if (R1 > 0) {
+                const r1LineX = apexX + Math.cos(startAngle) * R1 * scale;
+                const r1LineY = apexY + Math.sin(startAngle) * R1 * scale;
+                
+                drawArrow(apexX, apexY, r1LineX, r1LineY, dimColor);
+                
+                ctx.save();
+                ctx.translate((apexX + r1LineX) / 2, (apexY + r1LineY) / 2);
+                ctx.rotate(startAngle + Math.PI/2);
+                ctx.fillStyle = dimColor;
+                ctx.font = 'bold 14px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`R1 = ${R1.toFixed(1)}`, 0, -5);
+                ctx.restore();
+            }
+
+            // 2. L (Geratriz / Slant Height)
+            // Draw L on the side (endAngle side)
+            const l_start_x = apexX + Math.cos(endAngle) * R1 * scale;
+            const l_start_y = apexY + Math.sin(endAngle) * R1 * scale;
+            const l_end_x = apexX + Math.cos(endAngle) * R2 * scale;
+            const l_end_y = apexY + Math.sin(endAngle) * R2 * scale;
+            
+            // Draw parallel dimension line for L
+            const offsetL = 45; // Increased offset further
+            const l_p1_x = l_start_x + Math.cos(endAngle + Math.PI/2) * offsetL;
+            const l_p1_y = l_start_y + Math.sin(endAngle + Math.PI/2) * offsetL;
+            const l_p2_x = l_end_x + Math.cos(endAngle + Math.PI/2) * offsetL;
+            const l_p2_y = l_end_y + Math.sin(endAngle + Math.PI/2) * offsetL;
+
+            // Extension lines
+            ctx.strokeStyle = auxColor;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(l_start_x, l_start_y);
+            ctx.lineTo(l_p1_x, l_p1_y);
+            ctx.moveTo(l_end_x, l_end_y);
+            ctx.lineTo(l_p2_x, l_p2_y);
+            ctx.stroke();
+
+            // Dimension line
+            drawArrow(l_p1_x, l_p1_y, l_p2_x, l_p2_y, dimColor);
+            
+            // Label L
+            const L_val = R2 - R1;
+            ctx.save();
+            ctx.translate((l_p1_x + l_p2_x) / 2, (l_p1_y + l_p2_y) / 2);
+            ctx.rotate(endAngle + Math.PI/2);
+            ctx.fillStyle = dimColor;
+            ctx.font = 'bold 14px Inter';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(`L = ${L_val.toFixed(1)}`, 0, -5);
             ctx.restore();
 
 
+            // 3. Angle Label (alpha)
+            ctx.fillStyle = textColor;
+            ctx.font = 'bold 16px Inter';
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'alphabetic'; // Reset baseline
-            ctx.fillText(`${theta.toFixed(1)}°`, apexX, apexY + (R_dev * scale + 20));
+            ctx.textBaseline = 'middle';
+            // Move angle label closer to apex to avoid middle clutter
+            const angleLabelRadius = R1 * scale + (R2 - R1) * scale * 0.25; 
+            const angleLabelX = apexX + Math.cos(midAngle) * angleLabelRadius;
+            const angleLabelY = apexY + Math.sin(midAngle) * angleLabelRadius;
+            ctx.fillText(`α = ${theta.toFixed(1)}°`, angleLabelX, angleLabelY);
 
-            // Chord Text
-            const chordMidX = (x1_out + x2_out) / 2;
-            const chordMidY = (y1_out + y2_out) / 2;
-            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--accent').trim();
-            ctx.fillText(`Corda: ${corda.toFixed(1)}`, chordMidX, chordMidY + 15);
 
-            // Extra Info
-            ctx.font = '11px Inter';
-            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
-            ctx.fillText(`Base: Ø${d1} | Topo: Ø${d2} | H: ${h_input} | g: ${g_val.toFixed(1)}`, cx, canvas.height - 10);
+            // 4. C (Outer Chord) & A (Inner Chord)
+            // Outer Chord C
+            const c_mid_x = (x1_out + x2_out) / 2;
+            const c_mid_y = (y1_out + y2_out) / 2;
+            ctx.fillStyle = textColor;
+            ctx.font = 'bold 14px Inter';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(`C = ${corda.toFixed(1)}`, c_mid_x, c_mid_y + 20); // More offset
+
+            // Inner Chord A (if R1 > 0)
+            if (R1 > 0) {
+                const x1_in = apexX + Math.cos(startAngle) * R1 * scale;
+                const y1_in = apexY + Math.sin(startAngle) * R1 * scale;
+                const x2_in = apexX + Math.cos(endAngle) * R1 * scale;
+                const y2_in = apexY + Math.sin(endAngle) * R1 * scale;
+                
+                // Draw Inner Chord Line (Dashed)
+                ctx.setLineDash([6, 4]);
+                ctx.strokeStyle = auxColor;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(x1_in, y1_in);
+                ctx.lineTo(x2_in, y2_in);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                const a_mid_x = (x1_in + x2_in) / 2;
+                const a_mid_y = (y1_in + y2_in) / 2;
+                const chordA = 2 * R1 * Math.sin((theta * Math.PI / 180) / 2);
+                
+                ctx.fillStyle = textColor;
+                ctx.fillText(`A = ${chordA.toFixed(1)}`, a_mid_x, a_mid_y - 30); // More offset
+            }
+
+            // 5. h1 (Inner Sagitta) & h2 (Outer Sagitta)
+            // h2 (Outer Sagitta)
+            const sagitta2 = R2 - Math.sqrt(Math.pow(R2, 2) - Math.pow(corda / 2, 2));
+            const h2_end_x = apexX + Math.cos(midAngle) * R2 * scale;
+            const h2_end_y = apexY + Math.sin(midAngle) * R2 * scale;
+            
+            ctx.fillStyle = textColor;
+            ctx.textAlign = 'left'; 
+            // Push h2 label further out
+            ctx.fillText(`h2 = ${sagitta2.toFixed(1)}`, h2_end_x + 15, h2_end_y + 15);
+
+            // h1 (Inner Sagitta)
+            if (R1 > 0) {
+                const chordA = 2 * R1 * Math.sin((theta * Math.PI / 180) / 2);
+                const sagitta1 = R1 - Math.sqrt(Math.pow(R1, 2) - Math.pow(chordA / 2, 2));
+                
+                const h1_end_x = apexX + Math.cos(midAngle) * R1 * scale;
+                const h1_end_y = apexY + Math.sin(midAngle) * R1 * scale;
+
+                ctx.fillStyle = textColor;
+                ctx.textAlign = 'right';
+                // Push h1 label further in
+                ctx.fillText(`h1 = ${sagitta1.toFixed(1)}`, h1_end_x - 15, h1_end_y - 15);
+            }
+
+            // 6. Arc Lengths (Perímetros) - Move to Top Left to declutter
+            const arcLenOuter = (theta / 360) * 2 * Math.PI * R_dev;
+            const arcLenInner = (theta / 360) * 2 * Math.PI * r_dev;
+
+            ctx.fillStyle = textColor;
+            ctx.font = '13px Inter';
+            ctx.textAlign = 'left';
+            // Position at top left of canvas
+            let infoY = 40;
+            ctx.fillText(`Perímetro Externo: ${arcLenOuter.toFixed(1)} mm`, 20, infoY);
+            if (r_dev > 0) {
+                infoY += 20;
+                ctx.fillText(`Perímetro Interno: ${arcLenInner.toFixed(1)} mm`, 20, infoY);
+            }
+
+            // 7. Extra Info (Base info)
+            const g_val = R_dev - r_dev;
+            ctx.font = '14px Inter';
+            ctx.fillStyle = auxColor;
+            ctx.textAlign = 'center';
+            ctx.fillText(`DADOS: Base Ø${d1} | Topo Ø${d2} | Altura ${h_input} | Geratriz ${g_val.toFixed(1)}`, cx, canvas.height - 10);
 
         } else if (shape === 'square-to-round') {
             const width = Number(data.width) || 0;
             const diameter = Number(data.diameter) || 0;
             const height = Number(data.height) || 0;
-            
-            const size = Math.max(width, diameter);
-            
+            const thickness = inputs ? Number(inputs.thickness) : 0;
+
+            // Layout: Top View (Left) and Side View (Right)
+            const viewGap = 50;
+            const topViewSize = Math.max(width, diameter);
+            const sideViewWidth = Math.max(width, diameter);
+            const sideViewHeight = height;
+
+            const totalWidth = topViewSize + viewGap + sideViewWidth;
+            const totalHeight = Math.max(topViewSize, sideViewHeight);
+
             const scale = Math.min(
-                (canvas.width - padding * 2) / size,
-                (canvas.height - padding * 2) / size
+                (canvas.width - padding * 2) / totalWidth,
+                (canvas.height - padding * 2) / totalHeight
             );
 
-            if (size <= 0 || !Number.isFinite(scale)) {
-                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
+            if (totalWidth <= 0 || totalHeight <= 0 || !Number.isFinite(scale)) {
+                ctx.fillStyle = auxColor;
                 ctx.font = '14px Inter';
                 ctx.textAlign = 'center';
                 ctx.fillText('Dimensões Inválidas', cx, cy);
                 return;
             }
 
-            const w = width * scale;
-            const d = diameter * scale;
+            const startX = cx - (totalWidth * scale) / 2;
+            const centerY = cy;
 
-            // Draw Square
+            // --- TOP VIEW ---
+            const topViewX = startX + (topViewSize * scale) / 2;
+            const w_scaled = width * scale;
+            const d_scaled = diameter * scale;
+
+            // Square
+            ctx.strokeStyle = lineColor;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(topViewX - w_scaled / 2, centerY - w_scaled / 2, w_scaled, w_scaled);
+
+            // Circle
             ctx.beginPath();
-            ctx.rect(cx - w/2, cy - w/2, w, w);
+            ctx.arc(topViewX, centerY, d_scaled / 2, 0, Math.PI * 2);
             ctx.stroke();
 
-            // Draw Circle
-            ctx.beginPath();
-            ctx.arc(cx, cy, d/2, 0, Math.PI * 2);
-            ctx.stroke();
-
-            // Draw triangulation lines (schematic)
+            // Triangulation Lines (Top View)
+            ctx.strokeStyle = auxColor;
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 2]);
             const corners = [
-                {x: cx - w/2, y: cy - w/2},
-                {x: cx + w/2, y: cy - w/2},
-                {x: cx + w/2, y: cy + w/2},
-                {x: cx - w/2, y: cy + w/2}
+                { x: topViewX - w_scaled / 2, y: centerY - w_scaled / 2 },
+                { x: topViewX + w_scaled / 2, y: centerY - w_scaled / 2 },
+                { x: topViewX + w_scaled / 2, y: centerY + w_scaled / 2 },
+                { x: topViewX - w_scaled / 2, y: centerY + w_scaled / 2 }
             ];
-            
+
+            // Draw lines from corners to circle quadrants
             for (let i = 0; i < 12; i++) {
                 const angle = (i * 30) * Math.PI / 180;
-                const px = cx + Math.cos(angle) * d/2;
-                const py = cy + Math.sin(angle) * d/2;
+                const px = topViewX + Math.cos(angle) * d_scaled / 2;
+                const py = centerY + Math.sin(angle) * d_scaled / 2;
                 
+                // Find nearest corner
                 let nearest = corners[0];
                 let minDist = Infinity;
                 corners.forEach(c => {
@@ -338,25 +647,84 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
                 ctx.beginPath();
                 ctx.moveTo(nearest.x, nearest.y);
                 ctx.lineTo(px, py);
-                ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim() + '40';
                 ctx.stroke();
             }
-            
-            ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--accent').trim();
+            ctx.setLineDash([]);
 
-            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-main').trim();
-            ctx.font = '12px Inter';
+            // Labels Top View
+            ctx.fillStyle = textColor;
+            ctx.font = 'bold 14px Inter';
             ctx.textAlign = 'center';
+            ctx.fillText("VISTA DE TOPO", topViewX, centerY + topViewSize * scale / 2 + 30);
+
+
+            // --- SIDE VIEW ---
+            const sideViewX = startX + (topViewSize * scale) + (viewGap * scale) + (sideViewWidth * scale) / 2;
+            const h_scaled = height * scale;
+
+            // Trapezoid
+            const halfBase = w_scaled / 2;
+            const halfTop = d_scaled / 2;
             
-            ctx.fillText(`Base: ${width}x${width}`, cx, cy + w/2 + 20);
-            ctx.fillText(`Topo: Ø${diameter}`, cx, cy - w/2 - 10);
-            ctx.fillText(`H: ${height}`, cx + w/2 + 20, cy);
+            ctx.strokeStyle = lineColor;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(sideViewX - halfBase, centerY + h_scaled / 2); // Bottom Left
+            ctx.lineTo(sideViewX + halfBase, centerY + h_scaled / 2); // Bottom Right
+            ctx.lineTo(sideViewX + halfTop, centerY - h_scaled / 2); // Top Right
+            ctx.lineTo(sideViewX - halfTop, centerY - h_scaled / 2); // Top Left
+            ctx.closePath();
+            ctx.stroke();
+
+            // Centerline
+            ctx.strokeStyle = auxColor;
+            ctx.setLineDash([10, 5, 2, 5]);
+            ctx.beginPath();
+            ctx.moveTo(sideViewX, centerY - h_scaled / 2 - 20);
+            ctx.lineTo(sideViewX, centerY + h_scaled / 2 + 20);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Dimensions Side View
+            ctx.fillStyle = dimColor;
+            ctx.strokeStyle = dimColor;
+            ctx.lineWidth = 1;
+            ctx.font = '12px Inter';
+
+            // Height
+            const dimX = sideViewX + Math.max(halfBase, halfTop) + 20;
+            ctx.beginPath();
+            ctx.moveTo(dimX, centerY - h_scaled / 2);
+            ctx.lineTo(dimX, centerY + h_scaled / 2);
+            ctx.stroke();
+            // Ticks
+            ctx.moveTo(dimX - 5, centerY - h_scaled / 2);
+            ctx.lineTo(dimX + 5, centerY - h_scaled / 2);
+            ctx.moveTo(dimX - 5, centerY + h_scaled / 2);
+            ctx.lineTo(dimX + 5, centerY + h_scaled / 2);
+            ctx.stroke();
             
+            ctx.save();
+            ctx.translate(dimX + 15, centerY);
+            ctx.rotate(Math.PI / 2);
+            ctx.fillText(`H = ${height}`, 0, 0);
+            ctx.restore();
+
+            // Base
+            ctx.fillText(`Base = ${width}`, sideViewX, centerY + h_scaled / 2 + 20);
+            
+            // Top
+            ctx.fillText(`Topo Ø = ${diameter}`, sideViewX, centerY - h_scaled / 2 - 20);
+
+            // Label Side View
+            ctx.fillStyle = textColor;
+            ctx.font = 'bold 14px Inter';
+            ctx.fillText("VISTA LATERAL", sideViewX, centerY + h_scaled / 2 + 50);
+
             // Extra Info
-            ctx.font = '11px Inter';
-            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim();
-            const thickness = inputs ? Number(inputs.thickness) : 0;
-            ctx.fillText(`Base: ${width}x${width} | Topo: Ø${diameter} | H: ${height} | Esp: ${thickness}mm`, cx, canvas.height - 10);
+            ctx.font = '12px Inter';
+            ctx.fillStyle = auxColor;
+            ctx.fillText(`DADOS: Base ${width}x${width} | Topo Ø${diameter} | Altura ${height} | Esp ${thickness}mm`, cx, canvas.height - 20);
 
         } else if (shape === 'elbow') {
             const radius = Number(data.radius) || 0;

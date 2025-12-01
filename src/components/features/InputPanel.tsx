@@ -85,8 +85,14 @@ const InputPanel: React.FC<InputPanelProps> = ({ shape, onCalculate }) => {
                     <label htmlFor="material">Material</label>
                     <select name="material" value={material} onChange={(e) => setMaterial(e.target.value)}>
                         <option value="steel">Aço Carbono</option>
+                        <option value="galvanized">Aço Galvanizado</option>
                         <option value="stainless">Aço Inox</option>
                         <option value="aluminum">Alumínio</option>
+                        <option value="copper">Cobre</option>
+                        <option value="brass">Latão</option>
+                        <option value="bronze">Bronze</option>
+                        <option value="cast_iron">Ferro Fundido</option>
+                        <option value="nylon">Nylon</option>
                     </select>
                 </div>
             </form>
