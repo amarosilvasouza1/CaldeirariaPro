@@ -10,6 +10,8 @@ import { BracketInput } from '../../features/bracket/InputForm';
 import { BoltsInput } from '../../features/bolts/InputForm';
 import { PlateWeightInput } from '../../features/plate-weight/InputForm';
 import { VolumesInput } from '../../features/volumes/InputForm';
+import { PipeBranchingInput } from '../../features/pipe-branching/InputForm';
+import { ArcCalculatorInput } from '../../features/arc-calculator/InputForm';
 
 interface InputPanelProps {
     shape: string;
@@ -70,6 +72,10 @@ const InputPanel: React.FC<InputPanelProps> = ({ shape, onCalculate }) => {
                 return <PlateWeightInput handleChange={handleChange} />;
             case 'volumes':
                 return <VolumesInput handleChange={handleChange} />;
+            case 'pipe-branching':
+                return <PipeBranchingInput handleChange={handleChange} />;
+            case 'arc-calculator':
+                return <ArcCalculatorInput handleChange={handleChange} />;
             default:
                 return null;
         }

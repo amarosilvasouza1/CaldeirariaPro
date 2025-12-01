@@ -65,6 +65,18 @@ export const SHAPE_INFO: Record<string, ShapeInfoData> = {
         description: 'Cálculo de capacidade de carga e torque para parafusos estruturais de diferentes classes.',
         application: 'Uniões flangeadas, fixação de máquinas e estruturas metálicas.',
         keyParams: ['Diâmetro', 'Classe', 'Quantidade', 'Carga']
+    },
+    'pipe-branching': {
+        title: 'Boca de Lobo',
+        description: 'Cálculo para traçagem do corte de encaixe entre dois tubos (derivação).',
+        application: 'Derivações em tubulações, conexões em T, estruturas tubulares.',
+        keyParams: ['Ø Principal', 'Ø Derivação', 'Ângulo']
+    },
+    'arc-calculator': {
+        title: 'Calculadora de Arco',
+        description: 'Ferramenta para encontrar raio, ângulo e perímetro a partir da corda e flecha.',
+        application: 'Calandragem de chapas, verificação de curvatura, traçagem de arcos.',
+        keyParams: ['Corda', 'Flecha (Altura)', 'Raio']
     }
     // Add others as needed
 };

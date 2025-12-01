@@ -16,6 +16,8 @@ const shapes = [
     { id: 'bolts', label: 'Parafusos', icon: '🔩', desc: 'Tabela de resistência e cargas de ruptura.' },
     { id: 'plate-weight', label: 'Peso de Chapas', icon: '⚖️', desc: 'Calculadora de peso por material e dimensões.' },
     { id: 'volumes', label: 'Volumes e Áreas', icon: '🧊', desc: 'Cálculo de tanques, caixas e esferas.' },
+    { id: 'pipe-branching', label: 'Boca de Lobo', icon: '🎋', desc: 'Traçagem de corte para derivação de tubos.' },
+    { id: 'arc-calculator', label: 'Calc. de Arco', icon: '🏹', desc: 'Cálculo de raio, corda e flecha para calandragem.' },
 ];
 
 const ShapeSelector: React.FC<ShapeSelectorProps> = ({ currentShape, onSelect }) => {

@@ -15,6 +15,8 @@ import { calculateBracket } from './features/bracket/logic';
 import { calculateBolts } from './features/bolts/logic';
 import { calculatePlateWeight } from './features/plate-weight/logic';
 import { calculateVolumes } from './features/volumes/logic';
+import { calculatePipeBranching } from './features/pipe-branching/logic';
+import { calculateArc } from './features/arc-calculator/logic';
 import { InfoPopover } from './components/common/InfoPopover';
 
 import type { ShapeData, CalcResult, InputData } from './types';
@@ -71,6 +73,13 @@ const App: React.FC = () => {
             case 'volumes':
                 res = calculateVolumes(data);
                 break;
+            case 'pipe-branching':
+                res = calculatePipeBranching(data);
+                break;
+            case 'arc-calculator':
+                res = calculateArc(data);
+                break;
+
             default:
                 break;
         }
@@ -109,13 +118,15 @@ const App: React.FC = () => {
                                 {currentShape === 'bolts' && 'Resistência de Parafusos'}
                                 {currentShape === 'plate-weight' && 'Calculadora de Peso de Chapas'}
                                 {currentShape === 'volumes' && 'Cálculo de Volumes e Áreas'}
-                                {!['cylinder', 'cone', 'square-to-round', 'elbow', 'offset', 'stairs', 'bracket', 'bolts', 'plate-weight', 'volumes'].includes(currentShape) && 'Módulo em Desenvolvimento'}
+                                {currentShape === 'pipe-branching' && 'Boca de Lobo'}
+                                {currentShape === 'arc-calculator' && 'Calculadora de Arco'}
+                                {!['cylinder', 'cone', 'square-to-round', 'elbow', 'offset', 'stairs', 'bracket', 'bolts', 'plate-weight', 'volumes', 'pipe-branching', 'arc-calculator'].includes(currentShape) && 'Módulo em Desenvolvimento'}
                             </span>
                             
                             <InfoPopover shapeId={currentShape} />
                         </h2>
 
-                        {['cylinder', 'cone', 'square-to-round', 'elbow', 'offset', 'stairs', 'bracket', 'bolts', 'plate-weight', 'volumes'].includes(currentShape) ? (
+                        {['cylinder', 'cone', 'square-to-round', 'elbow', 'offset', 'stairs', 'bracket', 'bolts', 'plate-weight', 'volumes', 'pipe-branching', 'arc-calculator'].includes(currentShape) ? (
                             <div className="workspace-grid">
                                 <div className="sticky-sidebar">
                                     <InputPanel key={currentShape} shape={currentShape} onCalculate={handleCalculate} />

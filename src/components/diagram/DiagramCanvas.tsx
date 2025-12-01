@@ -10,6 +10,8 @@ import { drawBracket } from './drawers/drawBracket';
 import { drawBolts } from './drawers/drawBolts';
 import { drawPlateWeight } from './drawers/drawPlateWeight';
 import { drawVolumes } from './drawers/drawVolumes';
+import { drawPipeBranching } from './drawers/drawPipeBranching';
+import { drawArcCalculator } from './drawers/drawArcCalculator';
 import type { DrawerProps } from './drawers/types';
 
 interface DiagramCanvasProps {
@@ -95,6 +97,10 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
             drawPlateWeight(drawerProps);
         } else if (shape === 'volumes') {
             drawVolumes(drawerProps);
+        } else if (shape === 'pipe-branching') {
+            drawPipeBranching(drawerProps);
+        } else if (shape === 'arc-calculator') {
+            drawArcCalculator(drawerProps);
         }
 
         } catch (error) {
