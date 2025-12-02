@@ -1,7 +1,7 @@
 import type { ShapeData, CalcResult } from '../../types';
 import { BOLT_DATA, BOLT_CLASSES } from '../../utils/constants';
 
-export const calculateBolts = (data: ShapeData, _material: string = 'steel'): CalcResult => {
+export const calculateBolts = (data: ShapeData): CalcResult => {
     const diameterStr = String(data.diameterStr || 'M12'); // e.g., "M12"
     const boltClassStr = String(data.boltClass || '8.8'); // e.g., "8.8"
 

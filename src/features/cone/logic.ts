@@ -1,6 +1,23 @@
 import type { ShapeData, CalcResult } from '../../types';
 import { DENSITIES } from '../../utils/constants';
 
+export const getConeTheory = () => {
+    return [
+        {
+            title: 'Geratriz (Hipotenusa)',
+            content: 'A geratriz (g) é a linha inclinada do cone. Calculamos usando Pitágoras no triângulo formado pela altura e a diferença dos raios:\n\ng = √(h² + (R - r)²)'
+        },
+        {
+            title: 'Raio do Desenvolvimento',
+            content: 'Para planificar o cone, precisamos do raio do arco maior (R_dev). Ele sai da semelhança de triângulos:\n\nR_dev = (R × g) / (R - r)'
+        },
+        {
+            title: 'Ângulo do Arco',
+            content: 'O ângulo de abertura (θ) define o quanto o cone "abraça" o círculo. É proporcional ao perímetro da base:\n\nθ = (360 × R) / R_dev'
+        }
+    ];
+};
+
 export const calculateCone = (data: ShapeData, material: string = 'steel'): CalcResult => {
     const d1 = Number(data.d1) || 0;
     const d2 = Number(data.d2) || 0;
@@ -93,6 +110,7 @@ export const calculateCone = (data: ShapeData, material: string = 'steel'): Calc
             areaM2,
             volumeLiters,
             weightKg: weight
-        }
+        },
+        theory: getConeTheory()
     };
 };

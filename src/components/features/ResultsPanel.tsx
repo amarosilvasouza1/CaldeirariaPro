@@ -11,6 +11,7 @@ interface ResultsPanelProps {
 
 const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, shape, inputs, canvasRef }) => {
     const [isStepsOpen, setIsStepsOpen] = React.useState(false);
+    
     if (!results) {
         return (
             <section className="glass-panel" style={{ minHeight: '500px', display: 'flex', flexDirection: 'column' }}>
@@ -168,7 +169,9 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, shape, inputs, can
 
     return (
         <section className="glass-panel">
-            <h2><span style={{ marginRight: '0.5rem' }}>📐</span> Visualização & Resultados</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h2><span style={{ marginRight: '0.5rem' }}>📐</span> Visualização & Resultados</h2>
+            </div>
             
             <div style={{ 
                 background: 'rgba(0, 0, 0, 0.3)', 
@@ -239,8 +242,69 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, shape, inputs, can
                     </ul>
                 </div>
             </div>
+
+            {/* Classroom Mode Modal */}
+
             
-            <button onClick={handleDownloadPDF} className="secondary-button">Baixar Relatório PDF</button>
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                <button onClick={handleDownloadPDF} className="secondary-button" style={{ flex: 1 }}>
+                    Baixar Relatório PDF
+                </button>
+                <button 
+                    disabled 
+                    className="secondary-button" 
+                    style={{ 
+                        flex: 1, 
+                        opacity: 0.5, 
+                        cursor: 'not-allowed', 
+                        position: 'relative',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)'
+                    }}
+                >
+                    Exportar DXF (CAD)
+                    <span style={{
+                        position: 'absolute',
+                        top: '-8px',
+                        right: '-8px',
+                        background: '#f59e0b',
+                        color: '#000',
+                        fontSize: '0.6rem',
+                        padding: '2px 6px',
+                        borderRadius: '10px',
+                        fontWeight: 'bold'
+                    }}>
+                        EM BREVE
+                    </span>
+                </button>
+                <button 
+                    disabled 
+                    className="secondary-button" 
+                    style={{ 
+                        flex: 1, 
+                        opacity: 0.5, 
+                        cursor: 'not-allowed', 
+                        position: 'relative',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)'
+                    }}
+                >
+                    Otimização (Nesting)
+                    <span style={{
+                        position: 'absolute',
+                        top: '-8px',
+                        right: '-8px',
+                        background: '#f59e0b',
+                        color: '#000',
+                        fontSize: '0.6rem',
+                        padding: '2px 6px',
+                        borderRadius: '10px',
+                        fontWeight: 'bold'
+                    }}>
+                        EM BREVE
+                    </span>
+                </button>
+            </div>
         </section>
     );
 };

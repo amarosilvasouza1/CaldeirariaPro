@@ -8,4 +8,5 @@ export interface CalcResult {
     metrics: { [key: string]: string };
     steps: string[];
     calculated: Record<string, number | string | unknown>; // For internal diagram use
+    theory?: { title: string; content: string }[]; // Classroom Mode content
 }
