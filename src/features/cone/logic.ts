@@ -86,6 +86,13 @@ export const calculateCone = (data: ShapeData, material: string = 'steel'): Calc
             
             `5. FECHAMENTO:\n   - Junte as arestas laterais. Verifique se a altura vertical do cone bate com ${height} mm.\n   - Ponteie, confira o esquadro da base em uma superfície plana e proceda com a soldagem definitiva.`
         ],
-        calculated: { R_dev: R_outer, r_dev: R_inner, theta }
+        calculated: { 
+            R_dev: R_outer, 
+            r_dev: R_inner, 
+            theta,
+            areaM2,
+            volumeLiters,
+            weightKg: weight
+        }
     };
 };

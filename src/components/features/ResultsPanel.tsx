@@ -108,6 +108,10 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, shape, inputs, can
             y = 20;
         }
 
+        // Draw dark background for the diagram to ensure visibility of white lines/textures
+        doc.setFillColor(20, 20, 30); // Dark background color matching the app theme
+        doc.rect(xImg, y, pdfWidth, pdfHeight, 'F');
+
         doc.addImage(canvasImg, 'PNG', xImg, y, pdfWidth, pdfHeight);
         y += pdfHeight + 15;
 

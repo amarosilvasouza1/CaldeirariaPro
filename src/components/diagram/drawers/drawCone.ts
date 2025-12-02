@@ -87,11 +87,98 @@ export const drawCone = ({ ctx, canvas, data, inputs, baseFontSize, colors }: Dr
     const apexX = cx - bboxCenterX * scale;
     const apexY = cy - bboxCenterY * scale;
 
-    // Draw Filled Shape (Subtle Gradient on Dark)
+    // Material-based Gradient
+    const material = inputs?.material ? String(inputs.material) : 'steel';
     const gradient = ctx.createLinearGradient(minX * scale + cx, minY * scale + cy, maxX * scale + cx, maxY * scale + cy);
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.05)'); 
-    gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.15)'); 
-    gradient.addColorStop(1, 'rgba(255, 255, 255, 0.05)');
+
+    const addStops = (stops: [number, string][]) => {
+        stops.forEach(([pos, color]) => gradient.addColorStop(pos, color));
+    };
+
+    switch (material) {
+        case 'stainless':
+            // Shiny, high contrast, sharp highlights
+            addStops([
+                [0, 'rgba(200, 210, 225, 0.3)'],
+                [0.3, 'rgba(230, 240, 255, 0.1)'],
+                [0.5, 'rgba(255, 255, 255, 0.8)'], // Sharp highlight
+                [0.55, 'rgba(200, 210, 225, 0.3)'],
+                [0.8, 'rgba(220, 230, 245, 0.1)'],
+                [1, 'rgba(180, 190, 210, 0.4)']
+            ]);
+            break;
+        case 'aluminum':
+            // Soft matte metallic, whitish
+            addStops([
+                [0, 'rgba(230, 230, 230, 0.2)'],
+                [0.3, 'rgba(255, 255, 255, 0.4)'],
+                [0.6, 'rgba(220, 220, 220, 0.2)'],
+                [1, 'rgba(240, 240, 240, 0.3)']
+            ]);
+            break;
+        case 'copper':
+            // Polished reddish-orange
+            addStops([
+                [0, 'rgba(184, 115, 51, 0.4)'],
+                [0.3, 'rgba(255, 160, 122, 0.2)'],
+                [0.5, 'rgba(255, 200, 150, 0.7)'], // Highlight
+                [0.7, 'rgba(184, 115, 51, 0.4)'],
+                [1, 'rgba(139, 69, 19, 0.5)']
+            ]);
+            break;
+        case 'brass':
+        case 'bronze':
+            // Polished gold/yellow
+            addStops([
+                [0, 'rgba(181, 166, 66, 0.4)'],
+                [0.3, 'rgba(255, 240, 100, 0.2)'],
+                [0.5, 'rgba(255, 255, 180, 0.7)'], // Highlight
+                [0.7, 'rgba(181, 166, 66, 0.4)'],
+                [1, 'rgba(184, 134, 11, 0.5)']
+            ]);
+            break;
+        case 'nylon':
+            // Matte plastic, consistent color, no metallic shine
+            addStops([
+                [0, 'rgba(245, 245, 235, 0.6)'],
+                [0.5, 'rgba(255, 255, 250, 0.7)'], // Very soft center
+                [1, 'rgba(240, 240, 230, 0.6)']
+            ]);
+            break;
+        case 'cast_iron':
+            // Rough, dark, low contrast
+            addStops([
+                [0, 'rgba(60, 60, 60, 0.4)'],
+                [0.2, 'rgba(80, 80, 80, 0.3)'],
+                [0.5, 'rgba(100, 100, 100, 0.4)'],
+                [0.8, 'rgba(70, 70, 70, 0.3)'],
+                [1, 'rgba(50, 50, 50, 0.5)']
+            ]);
+            break;
+        case 'galvanized':
+            // Bright, irregular (simulated by multiple soft stops)
+            addStops([
+                [0, 'rgba(200, 200, 200, 0.3)'],
+                [0.2, 'rgba(240, 240, 255, 0.2)'],
+                [0.4, 'rgba(180, 180, 190, 0.3)'],
+                [0.6, 'rgba(220, 220, 230, 0.2)'],
+                [0.8, 'rgba(190, 190, 200, 0.3)'],
+                [1, 'rgba(210, 210, 220, 0.2)']
+            ]);
+            break;
+        case 'steel':
+        default:
+            // Standard Steel (Semi-gloss)
+            addStops([
+                [0, 'rgba(255, 255, 255, 0.1)'],
+                [0.2, 'rgba(255, 255, 255, 0.2)'],
+                [0.4, 'rgba(255, 255, 255, 0.1)'],
+                [0.6, 'rgba(255, 255, 255, 0.3)'], // Soft highlight
+                [0.8, 'rgba(255, 255, 255, 0.1)'],
+                [1, 'rgba(255, 255, 255, 0.2)']
+            ]);
+            break;
+    }
 
     ctx.beginPath();
     // Outer Arc
@@ -421,4 +508,25 @@ export const drawCone = ({ ctx, canvas, data, inputs, baseFontSize, colors }: Dr
     ctx.fillStyle = aux;
     ctx.textAlign = 'center';
     ctx.fillText(`DADOS: Base Ø${d1} | Topo Ø${d2} | Altura ${h_input} | Geratriz ${g_val.toFixed(1)}`, cx, canvas.height - 10);
+
+    // 8. Physical Properties (Bottom Right)
+    const areaM2 = Number(data.areaM2) || 0;
+    const volumeLiters = Number(data.volumeLiters) || 0;
+    const weightKg = Number(data.weightKg) || 0;
+
+    if (areaM2 > 0) {
+        ctx.textAlign = 'right';
+        ctx.fillStyle = textMain;
+        ctx.font = `${baseFontSize}px Inter`;
+        
+        let propsY = canvas.height - 40;
+        const propsLineHeight = 20;
+        const propsX = canvas.width - 20;
+
+        ctx.fillText(`Peso: ${weightKg.toFixed(2)} kg`, propsX, propsY);
+        propsY -= propsLineHeight;
+        ctx.fillText(`Área: ${areaM2.toFixed(2)} m²`, propsX, propsY);
+        propsY -= propsLineHeight;
+        ctx.fillText(`Vol. Interno: ${volumeLiters.toFixed(1)} L`, propsX, propsY);
+    }
 };
