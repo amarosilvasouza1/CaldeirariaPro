@@ -110,7 +110,7 @@ export const drawStairs = ({ ctx, canvas, data, baseFontSize, isMobile, colors }
         ctx.stroke();
         
         // Draw one step inside
-        const zScale = 0.5; // Arbitrary scale for the icon
+        // const zScale = 0.5; // Arbitrary scale for the icon
         const zRise = 40;
         const zRun = 40;
         

@@ -67,7 +67,8 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ canvasRef, shape, data, i
                 textMain: '#ffffff', // White for text
                 textMuted: getComputedStyle(document.body).getPropertyValue('--text-muted').trim(),
                 aux: '#94a3b8',  // Gray for aux info
-                accent: strokeColor
+                accent: strokeColor,
+                background: getComputedStyle(document.body).getPropertyValue('--background').trim() || '#0f172a'
             };
 
             const isMobile = canvas.width < 600;

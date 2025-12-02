@@ -2,7 +2,7 @@ import type { DrawerProps } from './types';
 import { drawArrow } from './utils';
 
 export const drawPipeBranching = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, colors }: DrawerProps) => {
-    const { textMain, textMuted, accent, aux, line, dim, background } = colors;
+    const { textMain, textMuted, accent, aux, line, dim } = colors;
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
     const padding = isMobile ? 40 : 80;
@@ -115,7 +115,7 @@ export const drawPipeBranching = ({ ctx, canvas, data, inputs, baseFontSize, isM
     
     // Let's assume angle is from the header axis (0 deg).
     // So 90 is vertical.
-    const drawAngle = -angleRad; // Negative for canvas Y up
+    // const drawAngle = -angleRad; // Negative for canvas Y up
     
     // We need to draw the branch *after* the header if it's "in front", or handle intersection.
     // Simple painter's algorithm: Header first, then Branch (looks like it's welded on top).

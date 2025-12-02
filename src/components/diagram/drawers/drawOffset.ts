@@ -1,8 +1,8 @@
 import type { DrawerProps } from './types';
 import { drawArrow } from './utils';
 
-export const drawOffset = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, colors }: DrawerProps) => {
-    const { textMain, textMuted, accent, aux, line, background } = colors;
+export const drawOffset = ({ ctx, canvas, data, baseFontSize, isMobile, colors }: DrawerProps) => {
+    const { textMain, textMuted, accent, aux, line } = colors;
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
     const padding = isMobile ? 40 : 80;
@@ -43,7 +43,7 @@ export const drawOffset = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, 
     const endY = startY - offset * scale;
 
     const d = diameter * scale;
-    const r = d / 2;
+    // const r = d / 2;
 
     // Helper to draw a pipe segment
     const drawPipe = (x1: number, y1: number, x2: number, y2: number, width: number) => {
@@ -99,12 +99,12 @@ export const drawOffset = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, 
     // Bisector is angleDeg / 2.
     // We need to draw a line (ellipse profile) at the joint.
     
-    const drawJoint = (x: number, y: number) => {
-        ctx.beginPath();
-        ctx.fillStyle = accent;
-        ctx.arc(x, y, 3, 0, Math.PI * 2);
-        ctx.fill();
-    };
+    // const drawJoint = (x: number, y: number) => {
+    //     ctx.beginPath();
+    //     ctx.fillStyle = accent;
+    //     ctx.arc(x, y, 3, 0, Math.PI * 2);
+    //     ctx.fill();
+    // };
     
     // Draw Centerlines (Dashed)
     ctx.beginPath();
@@ -134,7 +134,7 @@ export const drawOffset = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, 
     ctx.fillText(`Run ${run}`, (startX + endX)/2, dimY + 20);
 
     // Set Dimension
-    const dimX = endX + stubLength * scale + 20;
+    // const dimX = endX + stubLength * scale + 20;
     // Draw arrow from endY to startY at x = dimX
     // Actually let's draw it at the cut point or convenient place.
     // Let's use the space between the pipes if possible, or to the right.
