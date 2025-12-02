@@ -1,12 +1,13 @@
 import type { DrawerProps } from './types';
 import { drawArrow } from './utils';
 
-export const drawCone = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, colors }: DrawerProps) => {
+export const drawCone = ({ ctx, canvas, data, inputs, baseFontSize, colors }: DrawerProps) => {
     const { textMain, textMuted, aux, line, dim } = colors;
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
-    const padding = isMobile ? 40 : 80;
-    const labelOffset = isMobile ? 10 : 20;
+    const padding = 80; // Fixed large padding for consistent rendering
+
+    const labelOffset = 20;
 
     const R_dev = Number(data.R_dev) || 0;
     const r_dev = Number(data.r_dev) || 0;
@@ -30,6 +31,9 @@ export const drawCone = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, co
         minY = Math.min(minY, y);
         maxY = Math.max(maxY, y);
     };
+
+    // Include Apex (0,0) in bounding box to ensure it's visible
+    addPoint(0, 0);
 
     // Corners
     addPoint(Math.cos(startAngle) * R_dev, Math.sin(startAngle) * R_dev);
@@ -98,8 +102,111 @@ export const drawCone = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, co
     
     ctx.fillStyle = gradient;
     ctx.fill();
+
+
+
+    // Draw Total Length Line (Compass Point to End of Plate) - Left Side
+    // Draw a parallel dimension line offset from the start edge
+    const offsetDist = 20; // Fixed 20px offset
+    
+    // Vector perpendicular to startAngle
+    const perpAngle = startAngle - Math.PI / 2;
+    const offsetX = Math.cos(perpAngle) * offsetDist;
+    const offsetY = Math.sin(perpAngle) * offsetDist;
+
+    // Start and End points of the dimension line (parallel to radius)
+    // Start slightly away from apex to avoid touching it
+    const startGap = 20; 
+    const lineStartX = apexX + offsetX + Math.cos(startAngle) * startGap;
+    const lineStartY = apexY + offsetY + Math.sin(startAngle) * startGap;
+    
+    const lineEndX = apexX + offsetX + Math.cos(startAngle) * R_dev * scale;
+    const lineEndY = apexY + offsetY + Math.sin(startAngle) * R_dev * scale;
+
+    ctx.beginPath();
+    ctx.moveTo(lineStartX, lineStartY);
+    ctx.lineTo(lineEndX, lineEndY);
+    ctx.strokeStyle = dim;
+    ctx.lineWidth = 1;
+    // ctx.setLineDash([5, 5]); // Removed dashed line as per request
+    ctx.stroke();
+    // ctx.setLineDash([]);
+
+    // Draw start marker (tick)
+    const markerLen = 10;
+    ctx.beginPath();
+    ctx.moveTo(
+        lineStartX + Math.cos(perpAngle) * markerLen/2, 
+        lineStartY + Math.sin(perpAngle) * markerLen/2
+    );
+    ctx.lineTo(
+        lineStartX - Math.cos(perpAngle) * markerLen/2, 
+        lineStartY - Math.sin(perpAngle) * markerLen/2
+    );
+    ctx.stroke();
+
+    // Draw end marker (tick)
+    ctx.beginPath();
+    ctx.moveTo(
+        lineEndX + Math.cos(perpAngle) * markerLen/2, 
+        lineEndY + Math.sin(perpAngle) * markerLen/2
+    );
+    ctx.lineTo(
+        lineEndX - Math.cos(perpAngle) * markerLen/2, 
+        lineEndY - Math.sin(perpAngle) * markerLen/2
+    );
+    ctx.stroke();
+
+    // Label for Total Length (Side Line)
+    const midX = (lineStartX + lineEndX) / 2;
+    const midY = (lineStartY + lineEndY) / 2;
+    
+    // Position label further out from the line
+    const labelOffsetDist = 15;
+    const labelX = midX + Math.cos(perpAngle) * labelOffsetDist;
+    const labelY = midY + Math.sin(perpAngle) * labelOffsetDist;
+
+    ctx.fillStyle = dim;
+    ctx.font = `${baseFontSize}px Inter`;
+    ctx.textAlign = 'right';
+    ctx.fillText(`R: ${R_dev.toFixed(1)}`, labelX, labelY);
+
+    // Curved Major Radius Line (Dashed Arc)
+    // Concentric with the outer arc, slightly offset
+    const curveOffset = 20; // Fixed 20px offset
+    const curveRadius = R_dev * scale + curveOffset;
+    
+    ctx.beginPath();
+    ctx.arc(apexX, apexY, curveRadius, startAngle, endAngle, false);
+    ctx.strokeStyle = textMain;
+    ctx.lineWidth = 1;
+    // ctx.setLineDash([5, 5]); // Removed dashed line
+    ctx.stroke();
+    // ctx.setLineDash([]);
+
+    // Label for Curved Line
+    // Position at the midpoint of the arc
+    const midCurveAngle = (startAngle + endAngle) / 2;
+    const labelCurveRadius = curveRadius + 15; // Slightly further out for text
+    const labelCurveX = apexX + Math.cos(midCurveAngle) * labelCurveRadius;
+    const labelCurveY = apexY + Math.sin(midCurveAngle) * labelCurveRadius;
+
+    ctx.fillStyle = dim;
+    ctx.font = `bold ${baseFontSize + 2}px Inter`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // Rotate text to align with the curve tangent?
+    // For simplicity and readability, let's keep it horizontal but positioned correctly.
+    // Or rotate it to be perpendicular to the radius (tangent to the arc).
+    ctx.save();
+    ctx.translate(labelCurveX, labelCurveY);
+    ctx.rotate(midCurveAngle + Math.PI/2); // Rotate to align with tangent
+    ctx.fillText(`Maior (R) = ${R_dev.toFixed(1)}`, 0, 0);
+    ctx.restore();
+
     ctx.strokeStyle = line;
-    ctx.lineWidth = isMobile ? 2 : 3; 
+    ctx.lineWidth = 3; 
     ctx.stroke();
 
     // Draw Chord Line (Dashed)
@@ -110,7 +217,7 @@ export const drawCone = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, co
 
     ctx.setLineDash([8, 6]);
     ctx.strokeStyle = aux;
-    ctx.lineWidth = isMobile ? 1.5 : 2;
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(x1_out, y1_out);
     ctx.lineTo(x2_out, y2_out);
@@ -120,7 +227,7 @@ export const drawCone = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, co
     // Draw Apex Point (Compass Pivot) - Prominent Crosshair
     ctx.strokeStyle = dim;
     ctx.lineWidth = 2;
-    const crossSize = isMobile ? 6 : 10;
+    const crossSize = 10;
     ctx.beginPath();
     ctx.moveTo(apexX - crossSize, apexY);
     ctx.lineTo(apexX + crossSize, apexY);
@@ -129,55 +236,52 @@ export const drawCone = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, co
     ctx.stroke();
     
     ctx.beginPath();
-    ctx.arc(apexX, apexY, isMobile ? 3 : 5, 0, Math.PI * 2);
+    ctx.arc(apexX, apexY, 5, 0, Math.PI * 2);
     ctx.stroke();
 
     // Label for Apex
     ctx.fillStyle = dim;
     ctx.font = `bold ${baseFontSize}px Inter`;
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    ctx.fillText('Ponto do Compasso', apexX, apexY - labelOffset);
+    ctx.textBaseline = 'top';
+    ctx.fillText('Ponto do Compasso', apexX, apexY + labelOffset);
 
     // 1. R1 (Inner Radius) & R2 (Outer Radius)
     const R1 = r_dev;
     const R2 = R_dev;
     
-    // Draw R2 (Outer Radius) - Make it very explicit "Compass Size"
-    const midAngle = (startAngle + endAngle) / 2;
-    const r2LineX = apexX + Math.cos(midAngle) * R2 * scale;
-    const r2LineY = apexY + Math.sin(midAngle) * R2 * scale;
-    
-    ctx.setLineDash([4, 4]);
-    drawArrow(ctx, apexX, apexY, r2LineX, r2LineY, "", dim, isMobile);
-    ctx.setLineDash([]);
 
-    ctx.save();
-    ctx.translate((apexX + r2LineX) / 2, (apexY + r2LineY) / 2);
-    ctx.rotate(midAngle + Math.PI/2); 
-    ctx.fillStyle = dim;
-    ctx.font = `bold ${baseFontSize}px Inter`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    // Explicit label with both terms
-    ctx.fillText(`Raio Maior (R2) / Compasso = ${R2.toFixed(1)}`, 0, -5);
-    ctx.restore();
 
     // Draw R1 (Inner Radius) - If exists
+    const midAngle = (startAngle + endAngle) / 2;
+    
     if (R1 > 0) {
-        const r1LineX = apexX + Math.cos(startAngle) * R1 * scale;
-        const r1LineY = apexY + Math.sin(startAngle) * R1 * scale;
+        // Curved Minor Radius Line (Dashed Arc)
+        // Concentric with the inner arc, slightly offset inwards
+        const curveOffsetInner = 20; 
+        const curveRadiusInner = Math.max(0, R1 * scale - curveOffsetInner);
         
-        drawArrow(ctx, apexX, apexY, r1LineX, r1LineY, "", dim, isMobile);
-        
+        ctx.beginPath();
+        ctx.arc(apexX, apexY, curveRadiusInner, startAngle, endAngle, false);
+        ctx.strokeStyle = textMain;
+        ctx.lineWidth = 1;
+        // ctx.setLineDash([5, 5]); // Removed dashed line
+        ctx.stroke();
+        // ctx.setLineDash([]);
+
+        // Label for Curved Inner Line
+        const labelCurveRadiusInner = Math.max(0, curveRadiusInner - 15);
+        const labelCurveXInner = apexX + Math.cos(midAngle) * labelCurveRadiusInner;
+        const labelCurveYInner = apexY + Math.sin(midAngle) * labelCurveRadiusInner;
+
         ctx.save();
-        ctx.translate((apexX + r1LineX) / 2, (apexY + r1LineY) / 2);
-        ctx.rotate(startAngle + Math.PI/2);
+        ctx.translate(labelCurveXInner, labelCurveYInner);
+        ctx.rotate(midAngle + Math.PI/2); 
         ctx.fillStyle = dim;
         ctx.font = `bold ${baseFontSize}px Inter`;
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText(`R1 = ${R1.toFixed(1)}`, 0, -5);
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`Menor (r) = ${R1.toFixed(1)}`, 0, 0);
         ctx.restore();
     }
 
@@ -189,7 +293,7 @@ export const drawCone = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, co
     const l_end_y = apexY + Math.sin(endAngle) * R2 * scale;
     
     // Draw parallel dimension line for L
-    const offsetL = isMobile ? 25 : 45; // Reduced offset for mobile
+    const offsetL = 45; // Fixed offset for PC style
     const l_p1_x = l_start_x + Math.cos(endAngle + Math.PI/2) * offsetL;
     const l_p1_y = l_start_y + Math.sin(endAngle + Math.PI/2) * offsetL;
     const l_p2_x = l_end_x + Math.cos(endAngle + Math.PI/2) * offsetL;
@@ -206,7 +310,7 @@ export const drawCone = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, co
     ctx.stroke();
 
     // Dimension line
-    drawArrow(ctx, l_p1_x, l_p1_y, l_p2_x, l_p2_y, "", dim, isMobile);
+    drawArrow(ctx, l_p1_x, l_p1_y, l_p2_x, l_p2_y, "", dim, false);
     
     // Label L
     const L_val = R2 - R1;
@@ -217,7 +321,7 @@ export const drawCone = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, co
     ctx.font = `bold ${baseFontSize}px Inter`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
-    ctx.fillText(`L = ${L_val.toFixed(1)}`, 0, -5);
+    ctx.fillText(`Geratriz (L) = ${L_val.toFixed(1)}`, 0, -5);
     ctx.restore();
 
 
@@ -240,8 +344,8 @@ export const drawCone = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, co
     ctx.fillStyle = textMain;
     ctx.font = `bold ${baseFontSize}px Inter`;
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillText(`C = ${corda.toFixed(1)}`, c_mid_x, c_mid_y + labelOffset); 
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(`Corda (C) = ${corda.toFixed(1)}`, c_mid_x, c_mid_y - 5); 
 
     // Inner Chord A (if R1 > 0)
     if (R1 > 0) {
@@ -265,7 +369,9 @@ export const drawCone = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, co
         const chordA = 2 * R1 * Math.sin((theta * Math.PI / 180) / 2);
         
         ctx.fillStyle = textMain;
-        ctx.fillText(`A = ${chordA.toFixed(1)}`, a_mid_x, a_mid_y - labelOffset - 10); 
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText(`Corda Int. (A) = ${chordA.toFixed(1)}`, a_mid_x, a_mid_y + 5); 
     }
 
     // 5. h1 (Inner Sagitta) & h2 (Outer Sagitta)
@@ -277,7 +383,7 @@ export const drawCone = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, co
     ctx.fillStyle = textMain;
     ctx.textAlign = 'left'; 
     // Push h2 label further out
-    ctx.fillText(`h2 = ${sagitta2.toFixed(1)}`, h2_end_x + 15, h2_end_y + 15);
+    ctx.fillText(`Flecha (h2) = ${sagitta2.toFixed(1)}`, h2_end_x + 15, h2_end_y + 15);
 
     // h1 (Inner Sagitta)
     if (R1 > 0) {
@@ -290,7 +396,7 @@ export const drawCone = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, co
         ctx.fillStyle = textMain;
         ctx.textAlign = 'right';
         // Push h1 label further in
-        ctx.fillText(`h1 = ${sagitta1.toFixed(1)}`, h1_end_x - 15, h1_end_y - 15);
+        ctx.fillText(`Flecha Int. (h1) = ${sagitta1.toFixed(1)}`, h1_end_x - 15, h1_end_y - 15);
     }
 
     // 6. Arc Lengths (Perímetros) - Move to Top Left to declutter
@@ -301,8 +407,8 @@ export const drawCone = ({ ctx, canvas, data, inputs, baseFontSize, isMobile, co
     ctx.font = `${baseFontSize - 1}px Inter`;
     ctx.textAlign = 'left';
     // Position at top left of canvas
-    let infoY = isMobile ? 30 : 40;
-    const infoLineHeight = isMobile ? 15 : 20;
+    let infoY = 40;
+    const infoLineHeight = 20;
     ctx.fillText(`Perímetro Externo: ${arcLenOuter.toFixed(1)} mm`, 20, infoY);
     if (r_dev > 0) {
         infoY += infoLineHeight;
