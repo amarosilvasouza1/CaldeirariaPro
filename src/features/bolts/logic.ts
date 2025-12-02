@@ -1,6 +1,23 @@
 import type { ShapeData, CalcResult } from '../../types';
 import { BOLT_DATA, BOLT_CLASSES } from '../../utils/constants';
 
+export const getBoltsTheory = () => {
+    return [
+        {
+            title: 'Tensão de Ruptura',
+            content: 'A resistência de um parafuso depende da sua classe (ex: 8.8). O primeiro número é a resistência à tração (x100 MPa) e o segundo é o limite de escoamento (x10%).'
+        },
+        {
+            title: 'Área Resistente',
+            content: 'A força que o parafuso aguenta é calculada sobre a "área de tensão", que é menor que a área nominal devido aos filetes da rosca.'
+        },
+        {
+            title: 'Cisalhamento',
+            content: 'No corte (cisalhamento), a resistência é geralmente considerada 60% da resistência à tração pura.'
+        }
+    ];
+};
+
 export const calculateBolts = (data: ShapeData): CalcResult => {
     const diameterStr = String(data.diameterStr || 'M12'); // e.g., "M12"
     const boltClassStr = String(data.boltClass || '8.8'); // e.g., "8.8"

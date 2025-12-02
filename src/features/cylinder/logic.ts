@@ -1,6 +1,23 @@
 import type { ShapeData, CalcResult } from '../../types';
 import { DENSITIES } from '../../utils/constants';
 
+export const getCylinderTheory = () => {
+    return [
+        {
+            title: 'Perímetro (Circunferência)',
+            content: 'O comprimento da chapa aberta é igual ao perímetro do círculo médio. Usamos a fórmula:\n\nC = π × (Ø + e)\n\nOnde "e" é a espessura da chapa (linha neutra).'
+        },
+        {
+            title: 'Área Lateral',
+            content: 'A área de material necessária é o produto do perímetro pela altura:\n\nA = C × h'
+        },
+        {
+            title: 'Volume Interno',
+            content: 'O volume é a área da base multiplicada pela altura:\n\nV = (π × r²) × h'
+        }
+    ];
+};
+
 export const calculateCylinder = (data: ShapeData, material: string = 'steel'): CalcResult => {
     const diameter = Number(data.diameter) || 0;
     const height = Number(data.height) || 0;

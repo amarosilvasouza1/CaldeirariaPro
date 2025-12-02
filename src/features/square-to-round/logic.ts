@@ -1,62 +1,82 @@
 import type { ShapeData, CalcResult } from '../../types';
 import { DENSITIES } from '../../utils/constants';
 
+export const getSquareToRoundTheory = () => {
+    return [
+        {
+            title: 'Triangulação',
+            content: 'A transição quadrado para redondo é calculada dividindo a superfície em triângulos. Cada canto do quadrado se conecta a 1/4 do círculo.'
+        },
+        {
+            title: 'Comprimento Verdadeiro',
+            content: 'As linhas de traçagem (dobra) não estão em verdadeira grandeza na vista superior. Usamos Pitágoras com a altura (h) para achar o comprimento real:\n\nL_real = √(L_planta² + h²)'
+        },
+        {
+            title: 'Divisão do Círculo',
+            content: 'O círculo superior é dividido em partes iguais (geralmente 12 ou 16) para criar os pontos de conexão com a base quadrada.'
+        }
+    ];
+};
+
 export const calculateSquareToRound = (data: ShapeData, material: string = 'steel'): CalcResult => {
-    const width = Number(data.width) || 0;
     const diameter = Number(data.diameter) || 0;
+    const side = Number(data.side) || 0; // Square side
     const height = Number(data.height) || 0;
     const thickness = Number(data.thickness) || 0;
     const density = DENSITIES[material] || 7.85;
 
-    // Volume Calculation (Prismoid Formula Approximation)
-    // V = h/3 * (A_base + A_top + sqrt(A_base * A_top))
-    const areaBase = width * width;
+    // Basic validation
+    if (diameter <= 0 || side <= 0 || height <= 0) {
+        return {
+            metrics: { 'Erro': 'Dimensões inválidas' },
+            steps: [],
+            calculated: {}
+        };
+    }
+
+    // Calculations for development (simplified approximation for metrics)
+    // Real development requires complex triangulation points which are handled in the drawer.
+    // Here we calculate weights and basic dimensions.
+    
+    // Approximate Surface Area
+    // Area of circle + Area of square (base) + lateral area
+    // Lateral area approx: 4 * Area of trapezoid-like shapes? No, it's 4 triangles + 4 cone segments.
+    // Simplified: Average perimeter * slant height
+    const perimCircle = Math.PI * diameter;
+    const perimSquare = 4 * side;
+    const avgPerim = (perimCircle + perimSquare) / 2;
+    const slantHeight = Math.sqrt(Math.pow(height, 2) + Math.pow((side - diameter)/2, 2)); // Rough approx
+    const lateralAreaMm2 = avgPerim * slantHeight;
+    
+    const weight = (lateralAreaMm2 * thickness * density) / 1000000;
+    const areaM2 = lateralAreaMm2 / 1000000;
+
+    // Volume (Frustum-like approximation)
+    const areaBase = Math.pow(side, 2);
     const areaTop = Math.PI * Math.pow(diameter / 2, 2);
     const volumeMm3 = (height / 3) * (areaBase + areaTop + Math.sqrt(areaBase * areaTop));
     const volumeLiters = volumeMm3 / 1000000;
 
-    // Surface Area Calculation (Refined)
-    // 4 Triangular Faces + 4 Conical Corner Segments
-    // Area of 4 triangles = 4 * (1/2 * base * height) -> Base is width? No, base is width, top is tangent to circle?
-    // Actually, simpler approximation for surface area of transition:
-    // Average Perimeter * Slant Height (approx)
-    const perimSq = width * 4;
-    const perimCirc = Math.PI * diameter;
-    const slantHeightAvg = Math.sqrt(Math.pow(height, 2) + Math.pow((width - diameter) / 2, 2));
-    const areaMm2 = ((perimSq + perimCirc) / 2) * slantHeightAvg;
-    const areaM2 = areaMm2 / 1000000;
-
-    const weight = (areaMm2 * thickness * density) / 1000000;
-
     return {
         metrics: {
-            'Altura Vertical': `${height} mm`,
-            'Base Quadrada': `${width} x ${width} mm`,
-            'Topo Redondo': `Ø ${diameter} mm`,
+            'Base Quadrada': `${side} x ${side} mm`,
+            'Topo Redondo': `Ø${diameter} mm`,
+            'Altura': `${height} mm`,
+            'Peso Estimado': `${weight.toFixed(2)} kg`,
             'Área Superficial': `${areaM2.toFixed(2)} m²`,
-            'Volume Interno': `${volumeLiters.toFixed(2)} Litros`,
-            'Peso Estimado': `${weight.toFixed(2)} kg`
+            'Volume Interno': `${volumeLiters.toFixed(2)} Litros`
         },
         steps: [
-            `1. PREPARAÇÃO E TRAÇAGEM DA BASE:\n   - Selecione a chapa de ${material === 'steel' ? 'Aço' : material} com espessura de ${thickness} mm.\n   - Desenhe a vista de planta em tamanho real ou escala: um quadrado de ${width}x${width} mm com um círculo de Ø${diameter} mm centralizado (ou deslocado, se for excêntrico).`,
+            `1. TRAÇAGEM DA BASE:\n   - Desenhe a base quadrada de ${side}x${side} mm.\n   - Marque o centro e desenhe o círculo de Ø${diameter} mm (na vista de planta).`,
             
-            `2. DIVISÃO E TRIANGULAÇÃO:\n   - Divida o círculo em 12 partes iguais (3 por quadrante).\n   - Ligue cada ponto do círculo aos dois cantos mais próximos da base quadrada.\n   - Isso cria uma série de triângulos que mapeiam a transição da forma quadrada para a redonda.`,
+            `2. DIVISÃO EM TRIÂNGULOS:\n   - Divida o círculo em 12 partes iguais (3 por quadrante).\n   - Ligue os pontos do círculo aos cantos do quadrado. Isso forma a "teia" de triângulos.`,
             
-            `3. VERDADEIRA GRANDEZA (VG):\n   - As linhas traçadas na planta não são o comprimento real. Construa um diagrama de VG (Triângulo Retângulo):\n     • Cateto Vertical = Altura da peça (${height} mm)\n     • Cateto Horizontal = Comprimento da linha na planta\n     • Hipotenusa = Comprimento Real da linha na chapa.`,
+            `3. VERDADEIRA GRANDEZA:\n   - As linhas desenhadas na planta não são o tamanho real.\n   - Use a altura de ${height} mm para calcular a hipotenusa de cada linha (Triangulação).\n   - L_real = √(L_planta² + ${height}²)`,
             
-            `4. DESENVOLVIMENTO NA CHAPA:\n   - Comece traçando a linha de emenda (geralmente o centro de um lado do quadrado).\n   - Transfira as medidas reais (Hipotenusas) triângulo por triângulo, usando compasso para marcar os arcos das distâncias.\n   - Marque as linhas de dobra (quinas) da base quadrada.`,
-            
-            `5. CONFORMAÇÃO (DOBRA E CALANDRA):\n   - Faça uma dobra leve (vinco) nas 4 linhas que correspondem aos cantos da base quadrada.\n   - As seções triangulares planas permanecem retas.\n   - As seções cônicas (nos cantos) devem ser conformadas manualmente ou na calandra, curvando progressivamente.`,
-            
-            `6. FECHAMENTO:\n   - Junte as extremidades. Verifique se a base está perfeitamente quadrada e o topo redondo e nivelado.\n   - Solde a emenda vertical e, se necessário, solde colarinhos ou flanges nas extremidades.`
+            `4. DESENVOLVIMENTO:\n   - Comece traçando o triângulo plano de um dos lados do quadrado.\n   - Adicione os triângulos adjacentes usando as medidas reais encontradas.\n   - A peça final terá uma forma de "estrela" ou pode ser feita em duas metades para economizar material.`
         ],
-        calculated: { 
-            width, 
-            diameter, 
-            height,
-            areaM2,
-            volumeLiters,
-            weightKg: weight
+        calculated: {
+            diameter, side, height, weight, areaM2, volumeLiters
         }
     };
 };

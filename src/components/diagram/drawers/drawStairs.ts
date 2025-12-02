@@ -1,22 +1,25 @@
 import type { DrawerProps } from './types';
+import { drawArrow } from './utils';
 
 export const drawStairs = ({ ctx, canvas, data, baseFontSize, isMobile, colors }: DrawerProps) => {
-    const { textMain, textMuted, accent, aux } = colors;
+    const { textMain, textMuted, accent, aux, line } = colors;
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
     const padding = isMobile ? 40 : 80;
 
     const height = Number(data.height) || 0;
     const base = Number(data.base) || 0;
-    const numSteps = Number(data.numSteps) || 0;
+    const steps = Number(data.steps) || 0;
     const rise = Number(data.rise) || 0;
     const run = Number(data.run) || 0;
     
+    // Scale calculation
+    // We need to fit 'base' width and 'height' height
     const scaleX = (canvas.width - padding * 2) / base;
     const scaleY = (canvas.height - padding * 2) / height;
     const scale = Math.min(scaleX, scaleY);
     
-    if (base <= 0 || height <= 0 || !Number.isFinite(scale)) {
+    if (base <= 0 || height <= 0 || steps < 1 || !Number.isFinite(scale)) {
         ctx.fillStyle = textMuted;
         ctx.font = `${baseFontSize}px Inter`;
         ctx.textAlign = 'center';
@@ -24,87 +27,122 @@ export const drawStairs = ({ ctx, canvas, data, baseFontSize, isMobile, colors }
         return;
     }
 
+    // Start point (Bottom Left)
+    // We draw from Bottom-Left to Top-Right
     const startX = cx - (base * scale) / 2;
     const startY = cy + (height * scale) / 2;
     
+    // Draw Stringer (Banzo) - Simplified as a line or thick bar
     ctx.beginPath();
+    ctx.strokeStyle = textMuted;
+    ctx.lineWidth = 4;
     ctx.moveTo(startX, startY);
+    ctx.lineTo(startX + base * scale, startY - height * scale);
+    ctx.stroke();
+    
+    // Draw Steps (Zig-Zag)
+    ctx.beginPath();
+    ctx.strokeStyle = line; // Bright line for steps
+    ctx.lineWidth = 2;
     
     let currentX = startX;
     let currentY = startY;
     
-    for (let i = 0; i < numSteps; i++) {
+    // Draw the profile
+    // Start at bottom floor.
+    // First riser up? Or first tread?
+    // Usually starts with Riser UP, then Tread ACROSS.
+    
+    ctx.moveTo(startX, startY);
+    
+    for (let i = 0; i < steps; i++) {
+        // Riser UP
         currentY -= rise * scale;
         ctx.lineTo(currentX, currentY);
-        currentX += run * scale;
-        ctx.lineTo(currentX, currentY);
+        
+        // Tread ACROSS (except maybe last one if it's the floor level? Logic says run = base/(steps-1))
+        // If we have N steps, we have N risers.
+        // We have N-1 treads usually if top is flush.
+        
+        if (i < steps - 1) {
+            currentX += run * scale;
+            ctx.lineTo(currentX, currentY);
+        } else {
+            // Last step (landing)
+            // Draw a small landing or just end at the top point
+            // The logic `base` covers the total horizontal span.
+            // If run = base / (steps-1), then (steps-1)*run = base.
+            // So we end exactly at startX + base.
+        }
     }
-    
     ctx.stroke();
     
-    ctx.strokeStyle = textMuted + '40';
-    ctx.beginPath();
-    ctx.moveTo(startX, startY);
-    ctx.lineTo(startX + base * scale, startY - height * scale);
-    ctx.stroke();
-    ctx.strokeStyle = accent;
-
+    // Draw Dimensions
     ctx.fillStyle = textMain;
     ctx.font = `${baseFontSize}px Inter`;
+    ctx.textAlign = 'center';
     
-    ctx.fillText(`H: ${height}`, cx - (base * scale)/2 - 30, cy);
-    ctx.fillText(`Base: ${base}`, cx, startY + 20);
-    ctx.fillText(`${numSteps} Degraus`, cx, cy - 20);
-
-    // Visual Dimensions for First Step
-    if (numSteps > 0) {
-        const firstStepX = startX;
-        const firstStepY = startY;
-        const nextStepX = startX + run * scale;
-        const nextStepY = startY - rise * scale;
-
-        // Rise Label
+    // Height Dimension
+    const dimX = startX - 40;
+    drawArrow(ctx, dimX, startY, dimX, startY - height * scale, "", textMuted, isMobile);
+    ctx.fillText(`H ${height}`, dimX - 10, cy);
+    
+    // Base Dimension
+    const dimY = startY + 40;
+    drawArrow(ctx, startX, dimY, startX + base * scale, dimY, "", textMuted, isMobile);
+    ctx.fillText(`Base ${base}`, cx, dimY + 20);
+    
+    // Detail Zoom (Magnified Step)
+    // Draw a magnified view of a single step to show Rise/Run clearly
+    const zoomSize = 120;
+    const zoomX = cx + (base * scale) / 2 + 60; // Right side
+    const zoomY = cy;
+    
+    // Only draw if there's space
+    if (!isMobile && zoomX + zoomSize < canvas.width) {
+        // Circle container
         ctx.beginPath();
-        ctx.moveTo(firstStepX - 10, firstStepY);
-        ctx.lineTo(firstStepX - 10, nextStepY);
-        ctx.stroke();
-        // Ticks
-        ctx.moveTo(firstStepX - 5, firstStepY);
-        ctx.lineTo(firstStepX - 15, firstStepY);
-        ctx.moveTo(firstStepX - 5, nextStepY);
-        ctx.lineTo(firstStepX - 15, nextStepY);
+        ctx.arc(zoomX, zoomY, zoomSize/2, 0, Math.PI * 2);
+        ctx.fillStyle = colors.background; // Clear background
+        ctx.fill();
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = 1;
         ctx.stroke();
         
-        ctx.textAlign = 'right';
-        ctx.fillText(`E: ${rise.toFixed(1)}`, firstStepX - 20, (firstStepY + nextStepY) / 2);
-
-        // Run Label
+        // Draw one step inside
+        const zScale = 0.5; // Arbitrary scale for the icon
+        const zRise = 40;
+        const zRun = 40;
+        
+        const zCx = zoomX;
+        const zCy = zoomY + 20;
+        
         ctx.beginPath();
-        ctx.moveTo(firstStepX, nextStepY - 10);
-        ctx.lineTo(nextStepX, nextStepY - 10);
+        ctx.strokeStyle = line;
+        ctx.lineWidth = 3;
+        ctx.moveTo(zCx - zRun, zCy);
+        ctx.lineTo(zCx - zRun, zCy - zRise); // Up
+        ctx.lineTo(zCx, zCy - zRise); // Across
         ctx.stroke();
-        // Ticks
-        ctx.moveTo(firstStepX, nextStepY - 5);
-        ctx.lineTo(firstStepX, nextStepY - 15);
-        ctx.moveTo(nextStepX, nextStepY - 5);
-        ctx.lineTo(nextStepX, nextStepY - 15);
-        ctx.stroke();
-
+        
+        // Labels inside zoom
+        ctx.fillStyle = accent;
+        ctx.font = `${baseFontSize}px Inter`;
+        ctx.textAlign = 'right';
+        ctx.fillText(`E ${rise.toFixed(1)}`, zCx - zRun - 5, zCy - zRise/2);
         ctx.textAlign = 'center';
-        ctx.fillText(`P: ${run.toFixed(1)}`, (firstStepX + nextStepX) / 2, nextStepY - 20);
+        ctx.fillText(`P ${run.toFixed(1)}`, zCx - zRun/2, zCy - zRise - 5);
+        
+        ctx.fillStyle = textMuted;
+        ctx.font = `${baseFontSize-2}px Inter`;
+        ctx.textAlign = 'center';
+        ctx.fillText("Detalhe Degrau", zoomX, zoomY + zoomSize/2 + 15);
     }
     
+    // Bottom Info
     ctx.textAlign = 'center';
-    ctx.font = `${baseFontSize - 1}px Inter`;
-    ctx.fillStyle = textMuted;
-    ctx.fillText(`Espelho (E): ${rise.toFixed(1)}mm | Piso (P): ${run.toFixed(1)}mm`, cx, canvas.height - 20);
-
-    // Enriched Info
-    const weight = Number(data.weightKg) || 0;
-    const area = Number(data.totalAreaM2) || 0;
-    const stringerLen = Number(data.totalStringerLength) || 0;
-
+    ctx.font = `${baseFontSize}px Inter`;
     ctx.fillStyle = aux;
-    ctx.fillText(`Peso Est.: ${weight.toFixed(2)} kg | Área Total: ${area.toFixed(2)} m²`, cx, canvas.height - 5);
-    ctx.fillText(`Comp. Banzos: ${(stringerLen/1000).toFixed(2)} m`, cx, canvas.height + 10);
+    const weight = Number(data.totalWeight) || 0;
+    ctx.fillText(`Peso Est.: ${weight.toFixed(2)} kg | ${steps} Degraus`, cx, canvas.height - 20);
 };

@@ -14,5 +14,6 @@ export interface DrawerProps {
         aux: string;
         line: string;
         dim: string;
+        background: string;
     };
 }

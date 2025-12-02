@@ -5,18 +5,18 @@ import ResultsPanel from './components/features/ResultsPanel';
 import DiagramCanvas from './components/diagram/DiagramCanvas';
 import Header from './components/layout/Header';
 
-import { calculateCylinder } from './features/cylinder/logic';
+import { calculateCylinder, getCylinderTheory } from './features/cylinder/logic';
 import { calculateCone, getConeTheory } from './features/cone/logic';
-import { calculateSquareToRound } from './features/square-to-round/logic';
-import { calculateElbow } from './features/elbow/logic';
-import { calculateOffset } from './features/offset/logic';
-import { calculateStairs } from './features/stairs/logic';
-import { calculateBracket } from './features/bracket/logic';
-import { calculateBolts } from './features/bolts/logic';
-import { calculatePlateWeight } from './features/plate-weight/logic';
-import { calculateVolumes } from './features/volumes/logic';
-import { calculatePipeBranching } from './features/pipe-branching/logic';
-import { calculateArc } from './features/arc-calculator/logic';
+import { calculateSquareToRound, getSquareToRoundTheory } from './features/square-to-round/logic';
+import { calculateElbow, getElbowTheory } from './features/elbow/logic';
+import { calculateOffset, getOffsetTheory } from './features/offset/logic';
+import { calculateStairs, getStairsTheory } from './features/stairs/logic';
+import { calculateBracket, getBracketTheory } from './features/bracket/logic';
+import { calculateBolts, getBoltsTheory } from './features/bolts/logic';
+import { calculatePlateWeight, getPlateWeightTheory } from './features/plate-weight/logic';
+import { calculateVolumes, getVolumesTheory } from './features/volumes/logic';
+import { calculatePipeBranching, getPipeBranchingTheory } from './features/pipe-branching/logic';
+import { calculateArc, getArcTheory } from './features/arc-calculator/logic';
 import { InfoPopover } from './components/common/InfoPopover';
 
 import type { ShapeData, CalcResult, InputData } from './types';
@@ -28,6 +28,27 @@ const App: React.FC = () => {
     const [isClassroomMode, setIsClassroomMode] = useState(false);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const classroomPopoverRef = useRef<HTMLDivElement>(null);
+
+    // Helper to get theory content
+    const getTheoryContent = () => {
+        if (results?.theory) return results.theory;
+        
+        switch (currentShape) {
+            case 'cylinder': return getCylinderTheory();
+            case 'cone': return getConeTheory();
+            case 'square-to-round': return getSquareToRoundTheory();
+            case 'elbow': return getElbowTheory();
+            case 'offset': return getOffsetTheory();
+            case 'stairs': return getStairsTheory();
+            case 'bracket': return getBracketTheory();
+            case 'bolts': return getBoltsTheory();
+            case 'plate-weight': return getPlateWeightTheory();
+            case 'volumes': return getVolumesTheory();
+            case 'pipe-branching': return getPipeBranchingTheory();
+            case 'arc-calculator': return getArcTheory();
+            default: return [];
+        }
+    };
 
     // Close popover when clicking outside
     React.useEffect(() => {
@@ -65,39 +86,51 @@ const App: React.FC = () => {
         switch (currentShape) {
             case 'cylinder':
                 res = calculateCylinder(data, material);
+                res.theory = getCylinderTheory();
                 break;
             case 'cone':
                 res = calculateCone(data, material);
+                // theory is already attached in calculateCone, but we can ensure it here if we want
                 break;
             case 'square-to-round':
                 res = calculateSquareToRound(data, material);
+                res.theory = getSquareToRoundTheory();
                 break;
             case 'elbow':
                 res = calculateElbow(data, material);
+                res.theory = getElbowTheory();
                 break;
             case 'offset':
                 res = calculateOffset(data, material);
+                res.theory = getOffsetTheory();
                 break;
             case 'stairs':
                 res = calculateStairs(data, material);
+                res.theory = getStairsTheory();
                 break;
             case 'bracket':
                 res = calculateBracket(data, material);
+                res.theory = getBracketTheory();
                 break;
             case 'bolts':
                 res = calculateBolts(data);
+                res.theory = getBoltsTheory();
                 break;
             case 'plate-weight':
                 res = calculatePlateWeight(data, material);
+                res.theory = getPlateWeightTheory();
                 break;
             case 'volumes':
                 res = calculateVolumes(data);
+                res.theory = getVolumesTheory();
                 break;
             case 'pipe-branching':
                 res = calculatePipeBranching(data);
+                res.theory = getPipeBranchingTheory();
                 break;
             case 'arc-calculator':
                 res = calculateArc(data);
+                res.theory = getArcTheory();
                 break;
 
             default:
@@ -144,8 +177,8 @@ const App: React.FC = () => {
                                 {!['cylinder', 'cone', 'square-to-round', 'elbow', 'offset', 'stairs', 'bracket', 'bolts', 'plate-weight', 'volumes', 'pipe-branching', 'arc-calculator'].includes(currentShape) && 'Módulo em Desenvolvimento'}
                             </span>
 
-                            {/* Classroom Mode Button - Visible for supported shapes */}
-                            {['cone'].includes(currentShape || '') && (
+                            {/* Classroom Mode Button - Visible for all shapes */}
+                            {currentShape && (
                                 <div ref={classroomPopoverRef} style={{ position: 'relative', marginRight: '1rem' }} className="tooltip-container">
                                     <button 
                                         onClick={() => setIsClassroomMode(!isClassroomMode)}
@@ -266,7 +299,7 @@ const App: React.FC = () => {
                                             </div>
                                             <div style={{ padding: '1.2rem', maxHeight: '60vh', overflowY: 'auto' }} className="custom-scrollbar">
                                                 <div style={{ display: 'grid', gap: '1.2rem' }}>
-                                                    {(results?.theory || (currentShape === 'cone' ? getConeTheory() : [])).map((item, index) => (
+                                                    {getTheoryContent().map((item, index) => (
                                                         <div key={index} style={{ 
                                                             background: 'rgba(15, 23, 42, 0.6)', 
                                                             padding: '1rem', 
@@ -291,7 +324,7 @@ const App: React.FC = () => {
                                                         </div>
                                                     ))}
                                                     
-                                                    {!results?.theory && currentShape !== 'cone' && (
+                                                    {getTheoryContent().length === 0 && (
                                                         <div style={{ textAlign: 'center', color: '#94a3b8', padding: '2rem 1rem' }}>
                                                             <div style={{ fontSize: '2rem', marginBottom: '1rem', opacity: 0.5 }}>🚧</div>
                                                             <p style={{ marginBottom: '0.5rem', color: '#e2e8f0' }}>Módulo em Desenvolvimento</p>

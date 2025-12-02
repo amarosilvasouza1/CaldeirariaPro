@@ -1,6 +1,23 @@
 import type { ShapeData, CalcResult } from '../../types';
 import { DENSITIES } from '../../utils/constants';
 
+export const getOffsetTheory = () => {
+    return [
+        {
+            title: 'Cálculo da Hipotenusa',
+            content: 'O deslocamento (offset) forma um triângulo retângulo. A peça de ligação (carretel) é a hipotenusa:\n\nDeslocamento Real = √(Altura² + Desvio²)'
+        },
+        {
+            title: 'Ângulo de Curva',
+            content: 'O ângulo das curvas necessárias é encontrado pela tangente:\n\ntan(α) = Desvio / Altura\nα = arctan(Desvio / Altura)'
+        },
+        {
+            title: 'Desconto das Curvas',
+            content: 'Para cortar o tubo reto (nipple), devemos descontar o avanço das curvas (raio) do comprimento total calculado.'
+        }
+    ];
+};
+
 export const calculateOffset = (data: ShapeData, material: string = 'steel'): CalcResult => {
     const diameter = Number(data.diameter) || 0;
     const offset = Number(data.offset) || 0; // Deslocamento (altura)

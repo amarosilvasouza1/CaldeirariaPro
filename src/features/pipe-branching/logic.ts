@@ -1,5 +1,22 @@
 import type { CalcResult, ShapeData } from '../../types';
 
+export const getPipeBranchingTheory = () => {
+    return [
+        {
+            title: 'Interseção de Cilindros',
+            content: 'A boca de lobo é a curva gerada pela interseção de dois cilindros (tubos). A forma da curva depende dos diâmetros e do ângulo de conexão.'
+        },
+        {
+            title: 'Ordenadas de Corte',
+            content: 'Para traçar o corte, dividimos o tubo em partes iguais e calculamos a altura da curva em cada ponto usando trigonometria (seno/cosseno).'
+        },
+        {
+            title: 'Gabarito',
+            content: 'O desenvolvimento gera uma "onda" que pode ser impressa e enrolada no tubo para marcar o corte preciso.'
+        }
+    ];
+};
+
 export const calculatePipeBranching = (inputs: ShapeData): CalcResult => {
     const headerDiameter = Number(inputs.headerDiameter) || 0;
     const branchDiameter = Number(inputs.branchDiameter) || 0;

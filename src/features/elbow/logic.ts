@@ -1,48 +1,93 @@
 import type { ShapeData, CalcResult } from '../../types';
 import { DENSITIES } from '../../utils/constants';
 
+export const getElbowTheory = () => {
+    return [
+        {
+            title: 'Raio da Curva',
+            content: 'O raio da curva (R) define quão "aberta" ou "fechada" ela é. Geralmente segue padrões como Raio Longo (1.5 × Ø) ou Curto (1.0 × Ø).'
+        },
+        {
+            title: 'Divisão em Gomos',
+            content: 'A curva é formada por segmentos (gomos). O ângulo de cada corte depende do número de gomos (N) e do ângulo total da curva (α):\n\nÂngulo de Corte = α / (2 × (N - 1))'
+        },
+        {
+            title: 'Desenvolvimento (Espinha de Peixe)',
+            content: 'Para traçar o gomo, usamos a fórmula da senóide aplicada ao perímetro do tubo, variando a altura conforme o ângulo de corte.'
+        }
+    ];
+};
+
 export const calculateElbow = (data: ShapeData, material: string = 'steel'): CalcResult => {
     const diameter = Number(data.diameter) || 0;
-    const radius = Number(data.radius) || 0; // Raio da curva
-    const segments = Number(data.segments) || 3; // Número de gomos
-    const angle = Number(data.angle) || 90; // Ângulo da curva
+    const radius = Number(data.radius) || (diameter * 1.5); // Default Long Radius
+    const angle = Number(data.angle) || 90;
+    const segments = Number(data.segments) || Number(data.joints) || 3; // Number of segments (gomos)
     const thickness = Number(data.thickness) || 0;
     const density = DENSITIES[material] || 7.85;
 
     // Validation
-    if (segments < 2) return { metrics: { 'Erro': 'Mínimo de 2 gomos.' }, steps: ['Insira pelo menos 2 gomos para calcular.'], calculated: { diameter, radius, segments, angle } };
+    if (diameter <= 0 || segments < 2) {
+        return {
+            metrics: { 'Erro': 'Dados inválidos' },
+            steps: [],
+            calculated: {}
+        };
+    }
 
     // Calculations
-    const numJoints = segments - 1;
-    const jointAngle = angle / numJoints;
-    const cutAngle = jointAngle / 2; // Alpha
+    // Number of welds = segments - 1
+    // Number of divisions = (segments - 1) * 2
+    const numberOfDivisions = (segments - 1) * 2;
+    const cutAngle = angle / numberOfDivisions; // Angle of the cut plane relative to the pipe axis normal
     const cutAngleRad = (cutAngle * Math.PI) / 180;
-
-    // Segment Dimensions (Middle Segment)
-    const tanAlpha = Math.tan(cutAngleRad);
     
-    const r_outer = radius + diameter/2;
-    const r_inner = radius - diameter/2;
+    // Segment dimensions
+    // Back (Costas) - Longest side
+    // Belly (Ventre) - Shortest side
+    // Centerline length of one full segment (Middle Segment)
+    // A full segment covers 2 * cutAngle
     
-    const h_long_half = r_outer * tanAlpha;
-    const h_short_half = r_inner * tanAlpha;
+    // Height of the cut from center (Flecha)
+    const cutHeight = Math.tan(cutAngleRad) * (diameter / 2);
     
-    // Full segment lengths (double the half)
-    const h_long_full = h_long_half * 2;
-    const h_short_full = h_short_half * 2;
-
-    // Weight & Area
-    const totalArcLength = (Math.PI * radius * angle) / 180;
-    const pipeCircumference = Math.PI * diameter;
-    const areaMm2 = pipeCircumference * totalArcLength;
+    // Lengths for a MIDDLE segment (Gomo Inteiro)
+    // Centerline length at radius R is not simple arc length for the segment, 
+    // but we can approximate the segment as a cylinder cut at both ends.
+    // The "max" length (back) and "min" length (belly) for a middle segment:
+    // Middle segment spans 2 * cutAngle.
+    // The "height" of the segment at the centerline (if it were straight) would be:
+    // h_center = 2 * R * tan(cutAngle) -- Wait, this is for miter bend geometry.
+    
+    // Let's use standard Miter Bend formulas.
+    // Radius R is the bend radius.
+    // Segment Angle = 2 * cutAngle (for middle segments).
+    // End segments have angle = cutAngle.
+    
+    // The length of the segment along the neutral axis (centerline of pipe)
+    // For a middle segment: L_center = 2 * R * tan(cutAngleRad)
+    // For an end segment: L_center_end = R * tan(cutAngleRad)
+    
+    // Back Length (Costas) for Middle Segment:
+    // L_back = 2 * (R + diameter/2) * tan(cutAngleRad)
+    const backLength = 2 * (radius + diameter/2) * Math.tan(cutAngleRad);
+    
+    // Belly Length (Ventre) for Middle Segment:
+    // L_belly = 2 * (radius - diameter/2) * Math.tan(cutAngleRad);
+    const bellyLength = 2 * (radius - diameter/2) * Math.tan(cutAngleRad);
+    
+    // Arc Length (Total Centerline)
+    const arcLength = (angle / 360) * 2 * Math.PI * radius;
+    
+    // Surface Area (approx cylinder of length arcLength)
+    const circumference = Math.PI * diameter;
+    const areaMm2 = circumference * arcLength;
     const areaM2 = areaMm2 / 1000000;
     const weight = (areaMm2 * thickness * density) / 1000000;
 
-    // Volume Interno
-    // V = Area_cross * Length
-    const radiusPipe = diameter / 2;
-    const areaCrossMm2 = Math.PI * Math.pow(radiusPipe, 2);
-    const volumeMm3 = areaCrossMm2 * totalArcLength;
+    // Volume
+    const crossSectionArea = Math.PI * Math.pow(diameter / 2, 2);
+    const volumeMm3 = crossSectionArea * arcLength;
     const volumeLiters = volumeMm3 / 1000000;
 
     return {
@@ -50,31 +95,28 @@ export const calculateElbow = (data: ShapeData, material: string = 'steel'): Cal
             'Raio da Curva': `${radius} mm`,
             'Ângulo Total': `${angle}°`,
             'Número de Gomos': `${segments}`,
-            'Ângulo por Segmento': `${jointAngle.toFixed(2)}°`,
             'Ângulo de Corte': `${cutAngle.toFixed(2)}°`,
-            'Comprimento de Corte': `${pipeCircumference.toFixed(1)} mm`,
-            'Comprimento Total (Arco)': `${totalArcLength.toFixed(1)} mm`,
-            'Altura Maior (Gomo)': `${h_long_full.toFixed(1)} mm`,
-            'Altura Menor (Gomo)': `${h_short_full.toFixed(1)} mm`,
+            'Costas (Gomo Inteiro)': `${backLength.toFixed(1)} mm`,
+            'Ventre (Gomo Inteiro)': `${bellyLength.toFixed(1)} mm`,
+            'Flecha de Corte': `${cutHeight.toFixed(1)} mm`,
+            'Comprimento do Arco': `${arcLength.toFixed(1)} mm`,
             'Área Superficial': `${areaM2.toFixed(2)} m²`,
-            'Volume Interno': `${volumeLiters.toFixed(2)} Litros`,
-            'Peso Estimado': `${weight.toFixed(2)} kg`
+            'Peso Estimado': `${weight.toFixed(2)} kg`,
+            'Volume Interno': `${volumeLiters.toFixed(2)} Litros`
         },
         steps: [
-            `1. PREPARAÇÃO E CÁLCULO:\n   - Material: Tubo ou chapa de ${material === 'steel' ? 'Aço' : material}, espessura ${thickness} mm.\n   - A curva de ${angle}° será dividida em ${segments} gomos.\n   - Ângulo de corte de cada gomo (Alpha): ${cutAngle.toFixed(2)}°.`,
+            `1. DEFINIÇÃO DOS GOMOS:\n   - Curva de ${angle}° com ${segments} gomos.\n   - Ângulo de Corte: ${cutAngle.toFixed(2)}°.\n   - Você precisará de: 2 Meios-Gomos (Pontas) e ${segments - 2} Gomos Inteiros (Meio).`,
             
-            `2. TRAÇAGEM DO GABARITO (DESENVOLVIMENTO):\n   - Trace uma linha reta com o comprimento do perímetro: ${pipeCircumference.toFixed(1)} mm.\n   - Divida essa linha em 12 partes iguais (pontos 0 a 12).\n   - Em cada ponto, marque a altura correspondente da curva senoidal (usando as alturas Máx: ${h_long_full.toFixed(1)} mm e Mín: ${h_short_full.toFixed(1)} mm calculadas).\n   - Ligue os pontos com uma régua flexível para formar a onda suave.`,
+            `2. DIMENSÕES DO GOMO INTEIRO:\n   - Comprimento nas Costas (Maior): ${backLength.toFixed(1)} mm.\n   - Comprimento no Ventre (Menor): ${bellyLength.toFixed(1)} mm.\n   - Altura do Corte (Flecha): ${cutHeight.toFixed(1)} mm.`,
             
-            `3. CORTE DOS GOMOS:\n   - Envolva o gabarito no tubo (ou trace na chapa plana antes de calandrar).\n   - Marque a linha de corte e a linha de centro (costas da curva).\n   - Corte os ${segments} gomos. As pontas (primeiro e último) são metade de um gomo central.`,
+            `3. TRAÇAGEM (ESPINHA DE PEIXE):\n   - Trace uma linha com o perímetro (${circumference.toFixed(1)} mm).\n   - Divida em 12 partes.\n   - Use a altura de corte (${cutHeight.toFixed(1)} mm) para traçar a senóide.`,
             
-            `4. MONTAGEM E ALINHAMENTO:\n   - Posicione o primeiro gomo.\n   - Encoste o segundo gomo girado 180° em relação ao primeiro. As partes mais longas devem se encontrar com as mais curtas do vizinho.\n   - Verifique se o ângulo formado entre os eixos é de ${jointAngle.toFixed(2)}°.`,
-            
-            `5. SOLDAGEM:\n   - Ponteie em 4 pontos (cruz) cada junta.\n   - Confira o ângulo total da curva (${angle}°) e o raio (${radius} mm) antes de soldar definitivamente.\n   - Solde o perímetro de cada junta, controlando o calor para não deformar.`
+            `4. MONTAGEM:\n   - Monte os gomos invertendo a posição (girando 180°) para formar a curva.\n   - O raio final deve ser conferido com um gabarito.`
         ],
-        calculated: { 
-            diameter, radius, segments, angle, cutAngle, 
-            h_long_half, h_short_half, h_long_full, h_short_full,
-            pipeCircumference
+        calculated: {
+            diameter, radius, angle, segments, cutAngle, circumference,
+            backLength, bellyLength, cutHeight,
+            middleSegmentAngle: cutAngle * 2
         }
     };
 };
