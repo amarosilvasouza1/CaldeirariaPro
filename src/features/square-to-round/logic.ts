@@ -50,6 +50,13 @@ export const calculateSquareToRound = (data: ShapeData, material: string = 'stee
             
             `6. FECHAMENTO:\n   - Junte as extremidades. Verifique se a base está perfeitamente quadrada e o topo redondo e nivelado.\n   - Solde a emenda vertical e, se necessário, solde colarinhos ou flanges nas extremidades.`
         ],
-        calculated: { width, diameter, height }
+        calculated: { 
+            width, 
+            diameter, 
+            height,
+            areaM2,
+            volumeLiters,
+            weightKg: weight
+        }
     };
 };

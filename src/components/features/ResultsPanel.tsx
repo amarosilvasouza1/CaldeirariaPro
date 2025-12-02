@@ -10,6 +10,7 @@ interface ResultsPanelProps {
 }
 
 const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, shape, inputs, canvasRef }) => {
+    const [isStepsOpen, setIsStepsOpen] = React.useState(false);
     if (!results) {
         return (
             <section className="glass-panel" style={{ minHeight: '500px', display: 'flex', flexDirection: 'column' }}>
@@ -193,17 +194,50 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, shape, inputs, can
             </div>
 
             <div style={{ marginBottom: '2rem' }}>
-                <h3 style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '1rem', marginBottom: '1rem', color: '#f59e0b' }}>Passo a Passo de Fabricação</h3>
-                <ul style={{ listStyle: 'none', counterReset: 'step-counter' }}>
-                    {results.steps.map((step, index) => (
-                        <li key={index} style={{ position: 'relative', paddingLeft: '2.5rem', marginBottom: '1rem', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
-                            <span style={{ position: 'absolute', left: 0, top: 0, width: '1.8rem', height: '1.8rem', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 'bold', color: '#f59e0b' }}>
-                                {index + 1}
-                            </span>
-                            {step}
-                        </li>
-                    ))}
-                </ul>
+                <button 
+                    onClick={() => setIsStepsOpen(!isStepsOpen)}
+                    style={{ 
+                        background: 'none', 
+                        border: 'none', 
+                        padding: 0, 
+                        cursor: 'pointer', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        width: '100%',
+                        textAlign: 'left',
+                        marginBottom: '1rem'
+                    }}
+                >
+                    <h3 style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '1rem', color: '#f59e0b', margin: 0, flex: 1 }}>
+                        Passo a Passo de Fabricação
+                    </h3>
+                    <span style={{ 
+                        color: '#f59e0b', 
+                        transform: isStepsOpen ? 'rotate(180deg)' : 'rotate(0deg)', 
+                        transition: 'transform 0.3s ease' 
+                    }}>
+                        ▼
+                    </span>
+                </button>
+                
+                <div style={{ 
+                    maxHeight: isStepsOpen ? '2000px' : '0',
+                    opacity: isStepsOpen ? 1 : 0,
+                    overflow: 'hidden',
+                    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                    marginTop: isStepsOpen ? '1rem' : '0'
+                }}>
+                    <ul style={{ listStyle: 'none', counterReset: 'step-counter' }}>
+                        {results.steps.map((step, index) => (
+                            <li key={index} style={{ position: 'relative', paddingLeft: '2.5rem', marginBottom: '1rem', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
+                                <span style={{ position: 'absolute', left: 0, top: 0, width: '1.8rem', height: '1.8rem', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 'bold', color: '#f59e0b' }}>
+                                    {index + 1}
+                                </span>
+                                {step}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             </div>
             
             <button onClick={handleDownloadPDF} className="secondary-button">Baixar Relatório PDF</button>
