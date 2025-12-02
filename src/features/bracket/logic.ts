@@ -28,6 +28,10 @@ export const calculateBracket = (data: ShapeData, material: string = 'steel'): C
     // Calculations
     const diagonal = Math.sqrt(Math.pow(base, 2) + Math.pow(height, 2));
     
+    // Specific Cuts (as per user request)
+    const cutA = height > 0 ? height / 5 : 0;
+    const cutB = base > 0 ? base / 7 : 0;
+    
     // Angles
     const angleBaseRad = Math.atan2(height, base);
     const angleBaseDeg = (angleBaseRad * 180) / Math.PI;
@@ -43,18 +47,21 @@ export const calculateBracket = (data: ShapeData, material: string = 'steel'): C
         metrics: {
             'Base': `${base} mm`,
             'Altura': `${height} mm`,
-            'Diagonal (Escora)': `${diagonal.toFixed(1)} mm`,
+            'Hipotenusa (X)': `${diagonal.toFixed(2)} mm`,
+            'Corte A (Base)': `${cutA.toFixed(2)} mm`,
+            'Corte B (Topo)': `${cutB.toFixed(2)} mm`,
             'Ângulo Base': `${angleBaseDeg.toFixed(1)}°`,
             'Ângulo Topo': `${angleTopDeg.toFixed(1)}°`,
             'Peso Estimado': `${weight.toFixed(2)} kg`
         },
         steps: [
-            `1. CORTE DA ESCORA (DIAGONAL):\n   - Corte uma barra com comprimento de ${diagonal.toFixed(1)} mm.`,
-            `2. ÂNGULOS DE CORTE:\n   - Na extremidade inferior (base), corte em ${angleBaseDeg.toFixed(1)}°.\n   - Na extremidade superior (topo), corte em ${angleTopDeg.toFixed(1)}°.`,
-            `3. MONTAGEM:\n   - Solde a escora unindo a ponta da base com a ponta da altura.\n   - Verifique o esquadro (90°) entre a base e a altura antes de soldar a diagonal.`
+            `1. CORTE DA ESCORA (DIAGONAL):\n   - Corte uma barra com comprimento de ${diagonal.toFixed(2)} mm.`,
+            `2. MARCAÇÃO DOS CORTES:\n   - Na base (inferior), marque a medida A = ${cutA.toFixed(2)} mm.\n   - No topo (superior), marque a medida B = ${cutB.toFixed(2)} mm.`,
+            `3. ÂNGULOS DE CORTE:\n   - Na extremidade inferior (base), corte em ${angleBaseDeg.toFixed(1)}°.\n   - Na extremidade superior (topo), corte em ${angleTopDeg.toFixed(1)}°.`,
+            `4. MONTAGEM:\n   - Solde a escora unindo a ponta da base com a ponta da altura.\n   - Verifique o esquadro (90°) entre a base e a altura antes de soldar a diagonal.`
         ],
         calculated: {
-            base, height, diagonal, angleBaseDeg
+            base, height, diagonal, angleBaseDeg, cutA, cutB
         }
     };
 };
